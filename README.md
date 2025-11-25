@@ -477,3 +477,54 @@ MIT License - Siehe LICENSE Datei
 ---
 
 **Happy Prompt Generating! 🚀**
+
+---
+
+## 🖥️ Production Server Setup (SYNTX)
+
+### Aktuelle Installation
+
+**Server:** dev.syntx-system.com  
+**Location:** `/opt/syntx-workflow-api-get-prompts`  
+**Cronjob:** Täglich 2:00 Uhr - 20 Prompts  
+**Status:** ✅ Production Running
+
+### Server Commands
+```bash
+# Manuell Prompts generieren (beliebige Anzahl)
+/opt/syntx-workflow-api-get-prompts/run_batch.sh 50
+
+# Logs ansehen
+tail -f /var/log/syntx-promptgen-cron.log
+
+# Service Status
+systemctl status syntx-promptgen.service
+
+# Cronjob anzeigen/editieren
+crontab -l
+crontab -e
+```
+
+### Cronjob anpassen
+```bash
+crontab -e
+# Ändere Anzahl: ...run_batch.sh 20  →  ...run_batch.sh 50
+# Ändere Zeit: 0 2 * * *  →  0 3 * * * (3 Uhr)
+```
+
+### Kosten-Tracking
+```bash
+# Lifetime Stats
+python3 -c "from cost_tracker import get_total_costs; import json; print(json.dumps(get_total_costs(), indent=2))"
+
+# Aktuelle Costs
+cat /opt/syntx-workflow-api-get-prompts/logs/costs.jsonl | tail -20
+```
+
+### Production Stats (Stand: 2025-11-25)
+
+- 💰 Cost per Batch (20): ~$0.06
+- ⏱️ Duration per Batch: ~2-3 min
+- ⭐ Avg Quality: 7/10
+- ✅ Success Rate: 100%
+
