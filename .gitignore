@@ -35,3 +35,6 @@ Thumbs.db
 test_output/
 *.tmp
 syntex_wrapper.txt
+wrappers/
+wrappers/
+syntex_wrapper*.txt

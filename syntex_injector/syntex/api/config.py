@@ -1,22 +1,22 @@
 """
-API Configuration für SYNTEX System
+SYNTEX API Configuration
 """
 
-# 7B Model Endpoint
+# API Endpoint
 API_ENDPOINT = "https://dev.syntx-system.com/api/chat"
 
-# Model Parameters für SYNTEX-Analyse
-MODEL_PARAMS = {
-    "max_new_tokens": 1024,    # Längere Outputs für detaillierte Analyse
-    "temperature": 0.3,        # Niedriger für präzise Kalibrierung
-    "top_p": 0.85,
-    "do_sample": True
-}
+# Timeouts (in Sekunden)
+CONNECT_TIMEOUT = 30
+READ_TIMEOUT = 3600  # 60 MINUTEN - Llama hat alle Zeit der Welt!
 
 # Retry Configuration
 MAX_RETRIES = 3
-RETRY_DELAYS = [1, 3, 7]  # Exponential Backoff
+RETRY_DELAYS = [1, 3, 7]  # Sekunden zwischen Retries
 
-# Timeouts
-CONNECT_TIMEOUT = 30
-READ_TIMEOUT = 1800
+# Model Parameters
+MODEL_PARAMS = {
+    "max_new_tokens": 1024,
+    "temperature": 0.3,
+    "top_p": 0.85,
+    "do_sample": True
+}

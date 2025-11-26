@@ -30,11 +30,11 @@ class EnhancedSyntexCalibrator:
     
     def __init__(
         self,
-        wrapper_file: Optional[Path] = None,
+        wrapper_name: str = "human",
         log_file: Optional[Path] = None,
         progress_file: Optional[Path] = None
     ):
-        self.wrapper = SyntexWrapper(wrapper_file)
+        self.wrapper = SyntexWrapper(wrapper_name)
         self.client = APIClient()
         self.logger = CalibrationLogger(log_file)
         self.parser = SyntexParser()

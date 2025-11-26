@@ -54,8 +54,8 @@ Beispiele:
     # Optional
     parser.add_argument(
         '-w', '--wrapper',
-        type=Path,
-        default=Path('syntex_wrapper.txt'),
+        type=str,
+        default='human',
         help='Custom SYNTEX Wrapper Datei'
     )
     parser.add_argument(
@@ -102,7 +102,7 @@ Beispiele:
         sys.exit(1)
     
     # Enhanced Calibrator
-    calibrator = EnhancedSyntexCalibrator(wrapper_file=args.wrapper)
+    calibrator = EnhancedSyntexCalibrator(wrapper_name=args.wrapper)
     
     # Kalibrierung durchführen
     success, response, metadata = calibrator.calibrate(

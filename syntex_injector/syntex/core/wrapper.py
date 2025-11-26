@@ -1,49 +1,60 @@
 """
-SYNTEX Framework Wrapper Management
+SYNTEX Wrapper Loader
 """
 
 from pathlib import Path
 from typing import Optional
 
+from ..utils.exceptions import WrapperNotFoundError
+
+
+# Wrapper Storage (Projekt-Root/wrappers)
+WRAPPER_DIR = Path(__file__).parent.parent.parent.parent / "wrappers"
+
+AVAILABLE_WRAPPERS = {
+    "human": WRAPPER_DIR / "syntex_wrapper_human.txt",
+    "sigma": WRAPPER_DIR / "syntex_wrapper_sigma.txt",
+    "sigma_v2": WRAPPER_DIR / "syntex_wrapper_sigma_v2.txt"
+}
+
 
 class SyntexWrapper:
-    """Verwaltet das SYNTEX::TRUE_RAW Framework Template"""
-    
-    def __init__(self, wrapper_file: Optional[Path] = None):
-        self.wrapper_file = wrapper_file or Path("syntex_wrapper.txt")
-        self._wrapper_text = None
+    def __init__(self, wrapper_name: str = "human"):
+        """
+        Args:
+            wrapper_name: Name ('human', 'sigma', 'sigma_v2') oder Path zu custom Wrapper
+        """
+        if wrapper_name in AVAILABLE_WRAPPERS:
+            self.wrapper_file = AVAILABLE_WRAPPERS[wrapper_name]
+        else:
+            # Custom path
+            self.wrapper_file = Path(wrapper_name)
+        
+        self.template = None
     
     def load(self) -> str:
-        """Lädt den SYNTEX-Wrapper aus Datei."""
+        """Lädt Wrapper-Template"""
+        # Prüfe ob Path existiert
         if not self.wrapper_file.exists():
-            raise FileNotFoundError(
-                f"SYNTEX Wrapper nicht gefunden: {self.wrapper_file}\n"
-                f"Bitte erstelle die Datei mit dem Framework-Template."
+            available = ", ".join(AVAILABLE_WRAPPERS.keys())
+            raise WrapperNotFoundError(
+                f"Wrapper nicht gefunden: {self.wrapper_file}\n"
+                f"Verfügbare: {available}"
             )
         
         with open(self.wrapper_file, 'r', encoding='utf-8') as f:
-            self._wrapper_text = f.read()
+            self.template = f.read()
         
-        return self._wrapper_text
+        return self.template
     
     def build_prompt(self, meta_prompt: str) -> str:
-        """
-        Kombiniert SYNTEX-Wrapper mit Meta-Prompt.
-        
-        Args:
-            meta_prompt: Der zu analysierende Meta-Prompt
-        
-        Returns:
-            Vollständiger SYNTEX-kalibrierter Prompt
-        """
-        if self._wrapper_text is None:
+        """Baut finalen Prompt"""
+        if not self.template:
             self.load()
         
-        return self._wrapper_text + meta_prompt
+        return self.template + "\n" + meta_prompt
     
-    @property
-    def wrapper_text(self) -> str:
-        """Gibt den geladenen Wrapper zurück."""
-        if self._wrapper_text is None:
-            self.load()
-        return self._wrapper_text
+    @staticmethod
+    def list_available():
+        """Liste verfügbare Wrapper"""
+        return list(AVAILABLE_WRAPPERS.keys())
