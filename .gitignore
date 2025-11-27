@@ -38,3 +38,15 @@ syntex_wrapper.txt
 wrappers/
 wrappers/
 syntex_wrapper*.txt
+# Queue System (Runtime Data)
+queue/incoming/*
+queue/processing/*
+queue/processed/*
+queue/error/*
+queue/archive/*
+queue/.tmp/*
+!queue/**/.gitkeep
+
+# SYNTX Wrappers - Core IP
+wrappers/*.txt
+/opt/syntx/wrappers/
