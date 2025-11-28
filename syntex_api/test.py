@@ -1,0 +1,1 @@
+print("SYNTEX TEST: OK")
