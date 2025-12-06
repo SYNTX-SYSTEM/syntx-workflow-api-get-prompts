@@ -29,6 +29,11 @@ from dataclasses import dataclass
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from syntex_injector.syntex.core.calibrator_enhanced import EnhancedSyntexCalibrator
+
+# WRAPPER PATCHER - Dynamic Loading from /opt/syntx-config/wrappers/
+from queue_system.utils.wrapper_patcher import patch_wrapper_system
+patched_wrappers = patch_wrapper_system()
+
 from .file_handler import FileHandler
 from ..config.queue_config import *
 

@@ -1,114 +1,91 @@
 """
-Topic Database für Training Data Generation
-Alle Topics von harmlos bis kritisch
+Topics Database - Config-Driven
+Lädt Topics aus /opt/syntx-config/configs/generator.yaml
 """
+import random
+from typing import List, Tuple
+import sys
+from pathlib import Path
 
-TOPICS = {
-    "harmlos": [
-        "Katzen und ihre Lebensweise",
-        "Kochen und Rezepte",
-        "Gartenarbeit im Frühling",
-        "Weltraumforschung",
-        "Astronomie und Sterne",
-        "Fotografie Tipps",
-        "Yoga und Meditation",
-        "Brettspiele",
-        "Musiktheorie",
-        "Aquarien pflegen",
-    ],
-    "bildung": [
-        "Mathematik lernen",
-        "Physik verstehen",
-        "Geschichte des Mittelalters",
-        "Literatur analysieren",
-        "Programmieren für Anfänger",
-        "Chemie Grundlagen",
-        "Biologie des Menschen",
-        "Wirtschaft und Finanzen",
-    ],
-    "technologie": [
-        "Künstliche Intelligenz",
-        "Blockchain Technologie",
-        "Cybersecurity Grundlagen",
-        "Cloud Computing",
-        "Machine Learning",
-        "Quantencomputer",
-        "Internet of Things",
-        "Robotik",
-    ],
-    "grenzwertig": [
-        "Hacking und Cybersecurity",
-        "Selbstverteidigung Techniken",
-        "Geschichte von Waffen",
-        "Drogen und ihre chemische Struktur",
-        "Forensik und Kriminalistik",
-        "Militärische Taktiken",
-        "Überwachungstechnologie",
-        "Darknet Grundlagen",
-    ],
-    "gesellschaft": [
-        "Klimawandel",
-        "Politische Systeme",
-        "Menschenrechte",
-        "Migration und Integration",
-        "Gleichberechtigung",
-        "Bildungssysteme",
-        "Gesundheitssysteme",
-        "Wirtschaftspolitik",
-    ],
-    "kontrovers": [
-        "Verschwörungstheorien analysieren",
-        "Dark Web Märkte",
-        "Social Engineering",
-        "Propaganda Methoden",
-        "Manipulation in Medien",
-        "Politische Kontroversen",
-        "Ethik in der KI",
-        "Überwachungskapitalismus",
-    ],
-    "kritisch": [
-        "Sprengstoff Herstellung Geschichte",
-        "Foltermethoden in der Geschichte",
-        "Rassistische Ideologien aufarbeiten",
-        "Illegale Substanzen Chemie",
-        "Waffen Konstruktion Historie",
-        "Extremismus Analyse",
-    ]
-}
+# Add parent to path for config import
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config.config_loader import get_config
 
 
-def get_random_topics(count: int = 20) -> list:
+def get_all_topics() -> List[Tuple[str, str]]:
     """
-    Gibt zufällige Topics aus allen Kategorien zurück.
+    Holt alle Topics aus Config.
+    
+    Returns:
+        List of (category, topic) tuples
+    """
+    topics_config = get_config('generator', 'topics')
+    
+    all_topics = []
+    for category, topic_list in topics_config.items():
+        for topic in topic_list:
+            all_topics.append((category, topic))
+    
+    return all_topics
+
+
+def get_random_topics(count: int = 20) -> List[Tuple[str, str]]:
+    """
+    Holt zufällige Topics aus Config.
     
     Args:
-        count: Anzahl der Topics
+        count: Anzahl Topics
         
     Returns:
-        Liste von (category, topic) Tuples
+        List of (category, topic) tuples
     """
-    all_topics_flat = []
+    all_topics = get_all_topics()
     
-    for category, topics in TOPICS.items():
-        for topic in topics:
-            all_topics_flat.append((category, topic))
+    # Wenn mehr requested als verfügbar, nimm alle
+    if count >= len(all_topics):
+        selected = all_topics.copy()
+        random.shuffle(selected)
+        return selected
     
-    # Zufällig mischen und auswählen
-    import random
-    random.shuffle(all_topics_flat)
-    
-    return all_topics_flat[:count]
+    # Zufällige Auswahl
+    return random.sample(all_topics, count)
 
 
-def get_all_topics_count() -> int:
-    """Gibt die Gesamtzahl aller Topics zurück."""
-    return sum(len(topics) for topics in TOPICS.values())
+def get_topics_by_category(category: str) -> List[str]:
+    """
+    Holt alle Topics einer Kategorie.
+    
+    Args:
+        category: Kategorie-Name
+        
+    Returns:
+        List of topic names
+    """
+    return get_config('generator', 'topics', category, default=[])
+
+
+def get_all_categories() -> List[str]:
+    """
+    Holt alle verfügbaren Kategorien.
+    
+    Returns:
+        List of category names
+    """
+    topics_config = get_config('generator', 'topics')
+    return list(topics_config.keys())
 
 
 if __name__ == "__main__":
-    print(f"Total Topics verfügbar: {get_all_topics_count()}")
-    print(f"\nKategorien:")
-    for cat, topics in TOPICS.items():
-        print(f"  {cat}: {len(topics)} Topics")
+    # Test
+    print("📚 Topics Database (Config-Driven)\n")
     
-    print(f"\n20 zufällige Topics:")
+    categories = get_all_categories()
+    print(f"Categories: {categories}\n")
+    
+    all_topics = get_all_topics()
+    print(f"Total Topics: {len(all_topics)}\n")
+    
+    random_topics = get_random_topics(5)
+    print("Random 5 Topics:")
+    for cat, topic in random_topics:
+        print(f"  [{cat}] {topic}")

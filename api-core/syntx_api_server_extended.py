@@ -3,6 +3,7 @@ SYNTX FELDER API SERVER - MIT ZEITBEREICHEN & VERLÄUFEN & QUEUE
 """
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 import json
 from pathlib import Path
@@ -13,6 +14,15 @@ app = FastAPI(
     title="SYNTX FELDER API",
     description="STRÖME FÜR PROMPT-FELDER NACH AUSSEN - MIT ZEITANALYSE & QUEUE",
     version="1.2.0"
+)
+
+# CORS MIDDLEWARE
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 class TemporalFieldAnalyzer:

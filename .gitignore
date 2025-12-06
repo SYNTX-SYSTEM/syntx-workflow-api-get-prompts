@@ -65,3 +65,7 @@ queue/archive/*
 queue/.tmp/*
 !queue/**/.gitkeep
 crontab/crontab.backup.*
+
+# Old logs (moved to /opt/syntx-config/logs/)
+logs/
+syntex_injector/logs/

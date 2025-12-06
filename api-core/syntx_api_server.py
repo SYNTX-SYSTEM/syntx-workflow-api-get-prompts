@@ -172,3 +172,60 @@ if __name__ == "__main__":
     print("   GET /feld/topics    - Themen-Felder") 
     print("   GET /feld/health    - Strom Gesundheit")
     uvicorn.run(app, host="0.0.0.0", port=8020)
+
+# Füge temporale Analyse zur Haupt-API hinzu
+from datetime import datetime
+from typing import Optional
+
+@app.get("/strom/prompts/temporal", summary="Zeitliche Felder-Analyse")
+async def get_temporal_prompts(
+    start_date: Optional[str] = Query(None, description="Startdatum (ISO Format: YYYY-MM-DDTHH:MM:SS)"),
+    end_date: Optional[str] = Query(None, description="Enddatum (ISO Format: YYYY-MM-DDTHH:MM:SS)"),
+    limit: int = Query(10, description="Anzahl Felder")
+):
+    """
+    📅 HOLEN SIE FELDER NACH ZEITBEREICHEN
+    """
+    temporal_analyzer = TemporalFieldAnalyzer()
+    felder = temporal_analyzer.get_felder_by_time_range(
+        start_date=start_date,
+        end_date=end_date, 
+        limit=limit
+    )
+    
+    # Transformiere für Response
+    prompts = [
+        {
+            "id": f"feld_{i}",
+            "topic": f.get('prompt_sent', 'UNKNOWN_FELD'),
+            "content": f.get('prompt_generated', ''),
+            "style": f.get('style', 'neutral'),
+            "quality_score": f.get('quality_score', {}).get('total_score', 0),
+            "timestamp": f.get('timestamp', ''),
+            "cost_field": f.get('cost', {}).get('total_cost', 0)
+        }
+        for i, f in enumerate(felder)
+    ]
+    
+    return {
+        "status": "ZEITSTROM_AKTIV",
+        "time_range": {
+            "start_date": start_date,
+            "end_date": end_date
+        },
+        "count": len(prompts),
+        "prompts": prompts
+    }
+
+@app.get("/strom/analytics/temporal", summary="Zeitliche Verlaufs-Analyse")
+async def get_temporal_analytics():
+    """
+    📊 ZEITLICHE STATISTIKEN DER FELDER-GENERIERUNG
+    """
+    temporal_analyzer = TemporalFieldAnalyzer()
+    stats = temporal_analyzer.get_temporal_statistics()
+    
+    return {
+        "status": "ANALYTICS_STROM_AKTIV", 
+        "temporal_analytics": stats
+    }

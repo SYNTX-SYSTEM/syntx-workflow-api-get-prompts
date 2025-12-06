@@ -1,8 +1,4 @@
-"""
-GPT-4 Prompt Generator Module
-"""
+"""SYNTX GPT Generator Module - Config-Driven"""
 
-from .syntx_prompt_generator import generate_prompt
-from .topics_database import TOPICS
-
-__all__ = ['generate_prompt', 'TOPICS']
+# Keine Imports hier - Module werden direkt importiert wo gebraucht
+__version__ = "2.0.0"

@@ -1,69 +1,83 @@
 """
-Prompt Style Variations
-Verschiedene Formulierungs-Styles für Prompt-Generierung
+Prompt Styles - Config-Driven
+Lädt Styles aus /opt/syntx-config/configs/generator.yaml
 """
+import random
+import sys
+from pathlib import Path
+from typing import List
+
+# Add parent to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config.config_loader import get_config
 
 
-PROMPT_STYLES = {
-    "technisch": {
-        "template": "Erstelle einen technisch präzisen und detaillierten Prompt über: {topic}",
-        "description": "Technische, faktenbasierte Formulierung"
-    },
-    "kreativ": {
-        "template": "Generiere einen kreativen und inspirierenden Prompt über: {topic}",
-        "description": "Kreative, fantasievolle Formulierung"
-    },
-    "akademisch": {
-        "template": "Schreibe einen wissenschaftlich fundierten Prompt über: {topic}",
-        "description": "Wissenschaftliche, strukturierte Formulierung"
-    },
-    "casual": {
-        "template": "Formuliere einen lockeren, verständlichen Prompt über: {topic}",
-        "description": "Umgangssprachlich, zugänglich"
-    }
-}
-
-
-def apply_style(topic: str, style: str = "technisch") -> str:
+def get_all_styles() -> List[str]:
     """
-    Wendet einen Prompt-Style auf ein Topic an.
+    Holt alle verfügbaren Styles aus Config.
+    
+    Returns:
+        List of style names
+    """
+    return get_config('generator', 'styles', 'available', default=[])
+
+
+def get_default_style() -> str:
+    """
+    Holt den Default Style.
+    
+    Returns:
+        Default style name
+    """
+    return get_config('generator', 'styles', 'default', default='technisch')
+
+
+def get_random_style() -> str:
+    """
+    Wählt einen zufälligen Style.
+    
+    Returns:
+        Random style name
+    """
+    styles = get_all_styles()
+    return random.choice(styles) if styles else 'technisch'
+
+
+def apply_style(prompt: str, style: str) -> str:
+    """
+    Wendet einen Style auf einen Prompt an.
     
     Args:
-        topic: Das Thema
-        style: Der Style (technisch, kreativ, akademisch, casual)
+        prompt: Original prompt
+        style: Style name
         
     Returns:
-        Formatierter Prompt
+        Styled prompt
     """
-    if style not in PROMPT_STYLES:
-        style = "technisch"  # Fallback
+    # Style-spezifische Präfixe
+    style_prefixes = {
+        'technisch': 'Erkläre technisch und präzise: ',
+        'kreativ': 'Erkläre kreativ und metaphorisch: ',
+        'akademisch': 'Erkläre in wissenschaftlichem Stil: ',
+        'casual': 'Erkläre in lockerer, verständlicher Sprache: '
+    }
     
-    template = PROMPT_STYLES[style]["template"]
-    return template.format(topic=topic)
-
-
-def get_all_styles() -> list:
-    """Gibt alle verfügbaren Styles zurück."""
-    return list(PROMPT_STYLES.keys())
-
-
-def get_style_info(style: str) -> dict:
-    """Gibt Infos zu einem Style zurück."""
-    return PROMPT_STYLES.get(style, PROMPT_STYLES["technisch"])
+    prefix = style_prefixes.get(style, '')
+    return f"{prefix}{prompt}" if prefix else prompt
 
 
 if __name__ == "__main__":
     # Test
-    topic = "Künstliche Intelligenz"
+    print("🎨 Prompt Styles (Config-Driven)\n")
     
-    print(f"Topic: {topic}\n")
-    print("="*60)
+    styles = get_all_styles()
+    print(f"Available Styles: {styles}")
+    print(f"Default Style: {get_default_style()}")
+    print(f"Random Style: {get_random_style()}\n")
     
-    for style in get_all_styles():
-        prompt = apply_style(topic, style)
-        info = get_style_info(style)
-        print(f"\n{style.upper()}:")
-        print(f"  {info['description']}")
-        print(f"  → {prompt}")
-    
-    print("\n" + "="*60)
+    # Test apply_style
+    test_prompt = "Was ist Quantencomputer?"
+    for style in styles:
+        styled = apply_style(test_prompt, style)
+        print(f"[{style}]")
+        print(f"  {styled}\n")
