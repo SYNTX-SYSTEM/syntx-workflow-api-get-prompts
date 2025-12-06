@@ -40,7 +40,7 @@ class FieldAnalyzer:
                 
                 # Quality Score aus syntex_result
                 syntex_result = job_data.get('syntex_result', {})
-                quality = syntex_result.get('quality_score', {})
+                quality = syntex_result.get('quality_score') or {}
                 total_score = quality.get('total_score', 0)
                 
                 if total_score >= min_score:

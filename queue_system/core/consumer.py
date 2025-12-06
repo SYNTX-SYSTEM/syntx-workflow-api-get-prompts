@@ -224,6 +224,11 @@ class QueueConsumer:
                     'worker_id': self.worker_id
                 }
                 
+                # SYNTX Response in TXT File schreiben
+                if response:
+                    with open(job.file_path, 'w', encoding='utf-8') as f:
+                        f.write(response)
+
                 # Move zu processed/
                 self.file_handler.move_to_processed(job)
                 
