@@ -55,18 +55,19 @@ curl http://localhost:8020/analytics/complete-dashboard | jq
 curl http://localhost:8020/evolution/syntx-vs-normal | jq
 ```
 
-**API Docs:** http://localhost:8020/docs
+**API Docs:** http://localhost:8020/docs  
+**Port:** 8020
 
 ---
 
-## 📡 API ENDPOINTS - VOLLSTÄNDIGE ÜBERSICHT
+## 📡 ALLE API ENDPOINTS - VOLLSTÄNDIGE ÜBERSICHT
 
-### 🏥 HEALTH & STATUS
+### 🏥 HEALTH & STATUS (2 Endpoints)
 
-| Endpoint | Beschreibung | Output |
-|----------|--------------|--------|
-| `GET /health` | System Health Check | Status, Version, Module |
-| `GET /` | Root Info | System Overview |
+| Endpoint | Was es zeigt | Use Case |
+|----------|--------------|----------|
+| `GET /health` | System Status, Version, Module | Quick Health Check |
+| `GET /` | Root Info, All Endpoints | API Overview |
 
 **Beispiel:**
 ```bash
@@ -76,140 +77,256 @@ curl http://localhost:8020/health | jq
 
 ---
 
-### 📊 ANALYTICS - SYSTEM INTELLIGENCE
+### 📊 ANALYTICS - SYSTEM INTELLIGENCE (18 Endpoints)
 
-#### Dashboard & Overview
+#### Dashboard & Overview (3 Endpoints)
 
-| Endpoint | Was es zeigt | Use Case |
-|----------|--------------|----------|
-| `GET /analytics/dashboard` | Gesamt-System Health | Quick Status Check |
-| `GET /analytics/overview` | Prompts, Quality, Topics | System Summary |
-| `GET /analytics/complete-dashboard` | **ALLES AGGREGIERT** | **Full System Insight** |
+| Endpoint | Was es zeigt | Was du bekommst |
+|----------|--------------|-----------------|
+| `GET /analytics/dashboard` | Gesamt-System Health | gesamt_health, queue status, quality metrics |
+| `GET /analytics/overview` | Prompts Overview | total, avg score, topics, languages |
+| `GET /analytics/complete-dashboard` | **ALLES AGGREGIERT** | System health, success stories, top topics, failures, insights |
 
-**Complete Dashboard zeigt:**
-- System Health (Total, Avg Score, Perfect Rate)
-- Success Stories (Score >= 95)
+**Complete Dashboard = DER WICHTIGSTE!**
+- System Health (total, avg, perfect rate)
+- Success Stories (Score ≥ 95)
 - Top Topics by Performance
 - Failure Analysis (Score = 0)
-- Wrapper Comparison
-- Field Completion Rates
 - Insights & Bottlenecks
 ```bash
 curl http://localhost:8020/analytics/complete-dashboard | jq
 ```
 
-#### Topics & Performance
+#### Topics Analysis (3 Endpoints)
 
-| Endpoint | Beschreibung |
+| Endpoint | Was es zeigt |
 |----------|--------------|
-| `GET /analytics/topics` | Alle Topics mit Scores |
+| `GET /analytics/topics` | Alle Topics mit Stats (avg, count, perfect) |
 | `GET /analytics/topics/{topic_name}` | Detailanalyse eines Topics |
-| `GET /analytics/success-rate` | Success Rate über Zeit |
+| `GET /analytics/correlation/topic-score` | Welche Topics korrelieren mit hohen Scores |
+
+**Topic Correlation zeigt:**
+- Positive Topics (gesellschaft: +10.17) 💎
+- Negative Topics (harmlos: -4.17) ⚠️
+
+#### Success Metrics (3 Endpoints)
+
+| Endpoint | Was es misst |
+|----------|--------------|
+| `GET /analytics/success-rate` | Overall Perfect Score Rate |
 | `GET /analytics/success-rate/by-wrapper` | Success Rate pro Wrapper |
 | `GET /analytics/success-rate/by-topic` | Success Rate pro Topic |
-| `GET /analytics/trends` | Trend-Analyse |
-| `GET /analytics/performance` | Performance Metrics |
+
+**Perfect Score = 100/100 (alle 6 SYNTEX Felder erfüllt)**
+
+#### Trends & Predictions (1 Endpoint)
+
+| Endpoint | Was es zeigt |
+|----------|--------------|
+| `GET /analytics/trends` | ML-basierte Trend-Analyse, Moving Average, Predictions, Velocity, Outliers |
+
+**ML Features:**
+- `velocity`: Wie schnell ändert sich Score? (0.74 = langsam steigend)
+- `predicted_next`: Nächster erwarteter Score (ML prediction)
+- `moving_average`: Geglätteter Trend
+- `outliers`: Statistische Anomalien
+```bash
+curl http://localhost:8020/analytics/trends | jq
+# → {trend: "STEIGEND", velocity: 0.74, predicted_next: 76.0}
+```
+
+#### Performance (4 Endpoints)
+
+| Endpoint | Was es misst |
+|----------|--------------|
+| `GET /analytics/performance` | Overall Performance Metrics |
 | `GET /analytics/performance/by-topic` | Performance pro Topic |
 | `GET /analytics/performance/hourly` | Stündliche Performance |
+| `GET /analytics/outliers` | Performance Outliers (Bottlenecks) |
 
-#### Scores & Distribution
+**Performance = Geschwindigkeit (duration_ms)**
+- Fastest Wrapper: syntex_system (42.4s avg)
+- Slowest Wrapper: deepsweep (102.3s avg)
 
-| Endpoint | Beschreibung |
+#### Score Analysis (2 Endpoints)
+
+| Endpoint | Was es zeigt |
 |----------|--------------|
 | `GET /analytics/scores/distribution` | Score Buckets (0-20, 20-40, ..., 98-100) |
-| `GET /analytics/scores/trends` | Score Trends über Zeit |
-| `GET /analytics/correlation/topic-score` | Topic-Score Korrelation |
-| `GET /analytics/outliers` | Ausreißer-Analyse |
+| `GET /analytics/scores/trends` | Score Trends über Zeit (täglich) |
+
+**Distribution Buckets:**
+- 98-100: Perfect Scores 💎
+- 80-99: Good Scores ✨
+- <20: Failed Scores ⚠️
 
 ---
 
-### 🧬 EVOLUTION - SELF-OPTIMIZATION
+### 🧬 EVOLUTION - SELF-OPTIMIZATION (6 Endpoints)
 
 **Das System lernt sich selbst. Erfolgreiche Prompts informieren nächste Generation.**
 
 | Endpoint | Was es misst | Key Insight |
 |----------|--------------|-------------|
-| `GET /evolution/syntx-vs-normal` | SYNTX Terminologie vs. Normal | **SYNTX = 92.74 avg, Normal = 48.24** |
+| `GET /evolution/syntx-vs-normal` | SYNTX Terminologie vs. Normal Sprache | **SYNTX = 92.74 avg, Normal = 48.24 (+44.5 gap)** |
 | `GET /evolution/keywords/power` | Welche Keywords aktivieren Felder | **tier-1 = 99.29 avg score** |
 | `GET /evolution/topics/resonance` | Welche Topics resonieren mit SYNTX | **kritisch = +70.86 boost** |
-| `GET /evolution/generations/improvement` | Verbesserung über Generationen | Evolution Tracking |
+| `GET /evolution/generations/improvement` | Verbesserung über Generationen | Evolution Progress Tracking |
 | `GET /evolution/wrappers/learning` | Wie Wrapper lernen | Learning Curves |
 | `GET /evolution/fields/evolution` | Feld-Completion über Zeit | Field Development |
 
-**Beispiel - Keyword Power:**
+**SYNTX vs Normal Beispiel:**
 ```bash
-curl http://localhost:8020/evolution/keywords/power | jq
-# → SYNTX Keywords (kalibrierung, strömung, drift) = 96-99 avg scores
+curl http://localhost:8020/evolution/syntx-vs-normal | jq
+# → SYNTX: 92.74, Normal: 48.24, Gap: +44.5 🔥
 ```
 
-**Key Discovery:**
-- SYNTX-Terminologie aktiviert direkt die Feld-Ebene
-- Nicht "bessere Prompts", sondern **andere Ebene**
-- Felder > Token
+**Keyword Power Top 5:**
+1. tier-1: 99.29 avg (97% perfect rate) 💎
+2. tier-2: 99.29 avg 💎
+3. driftkörper: 98.25 avg ⚡
+4. kalibrierung: 96.96 avg 🔥
+5. strömung: 96.94 avg 🌊
+
+**Key Discovery:** SYNTX-Terminologie aktiviert direkt Feld-Ebene im Model!
+
+**Topic Resonance:**
+- kritisch + SYNTX = +70.86 boost (HIGH harmony) 💎
+- grenzwertig + SYNTX = +70.40 boost (HIGH) 💎
+- technologie + SYNTX = +34.83 boost (MODERATE) ✨
 
 ---
 
-### 🔀 COMPARE - DIREKTE VERGLEICHE
+### 🔀 COMPARE - DIREKTE VERGLEICHE (3 Endpoints)
 
-| Endpoint | Vergleicht |
-|----------|------------|
-| `GET /compare/wrappers` | Alle Wrappers (human, mistral, etc.) |
-| `GET /compare/wrappers/{wrapper1}/{wrapper2}` | Zwei Wrappers direkt |
-| `GET /compare/topics/{topic1}/{topic2}` | Zwei Topics direkt |
+| Endpoint | Was es vergleicht |
+|----------|-------------------|
+| `GET /compare/wrappers` | Alle Wrappers (syntex, sigma, deepsweep, human) |
+| `GET /compare/wrappers/{wrapper1}/{wrapper2}` | Zwei Wrappers head-to-head |
+| `GET /compare/topics/{topic1}/{topic2}` | Zwei Topics head-to-head |
 
-**Use Case:** Welcher Wrapper produziert bessere Resonanz? Welches Topic funktioniert besser?
+**Wrapper Battle Ergebnis:**
+
+| Wrapper | Avg Score | Success Rate | Avg Duration | Winner? |
+|---------|-----------|--------------|--------------|---------|
+| **syntex_system** | **32.0** | **23.68%** | **42.4s** | 👑 |
+| sigma | 10.65 | 0.0% | 76.9s | |
+| deepsweep | 11.77 | 0.0% | 102.3s | |
+
+**SYNTEX gewinnt in ALLEN Kategorien!** 💎
+```bash
+curl http://localhost:8020/compare/wrappers | jq
+```
 
 ---
 
-### 📝 PROMPTS - PROMPT MANAGEMENT
+### 📝 PROMPTS - PROMPT MANAGEMENT (8 Endpoints)
 
-| Endpoint | Beschreibung |
-|----------|--------------|
-| `GET /prompts/all` | Alle generierten Prompts |
-| `GET /prompts/by-job/{job_id}` | Prompt für spezifischen Job |
-| `GET /prompts/best` | Best Performing Prompts |
-| `GET /prompts/fields/breakdown` | Field Completion Analysis |
-| `GET /prompts/costs/total` | GPT-4 Kosten Tracking |
-| `GET /prompts/search?q={query}` | Suche in Prompts |
+| Endpoint | Was es zeigt | Use Case |
+|----------|--------------|----------|
+| `GET /prompts/all?limit=100` | Alle Prompts (Metadata only) | Quick Overview |
+| `GET /prompts/by-job/{job_id}` | Spezifischer Job | Job Details |
+| `GET /prompts/best?limit=20` | Best Performing Prompts | Top Prompts |
+| `GET /prompts/table-view?limit=50&min_score=0&topic=` | **TABLE VIEW** (Fast, ohne Text) | **Main Prompts Page** |
+| `GET /prompts/full-text/{filename}` | **VOLLTEXT** (Prompt + Response) | **Detail View** |
+| `GET /prompts/fields/breakdown` | Field Completion Analysis | Quality Check |
+| `GET /prompts/costs/total` | GPT-4 Kosten Tracking | Budget Monitoring |
+| `GET /prompts/search?q={query}` | Suche in Prompts | Find Prompts |
 
-**Fields Breakdown zeigt:**
-- Welche SYNTEX Felder werden erfüllt?
+**Table View vs Full Text:**
+- **Table View**: Schnell, viele Rows, kein Text (für Übersicht)
+- **Full Text**: Langsam, eine Row, kompletter Text (für Details)
+
+**Table View Beispiel:**
+```bash
+curl "http://localhost:8020/prompts/table-view?limit=10&min_score=80" | jq
+# → {status: "TABLE_VIEW_READY", total_rows: 3, table: [...]}
+```
+
+**Full Text Beispiel:**
+```bash
+curl "http://localhost:8020/prompts/full-text/20251205_..._.json" | jq
+# → {prompt_full_text: "...", response_full_text: "...", score: 100}
+```
+
+**Fields Breakdown:**
 - drift, hintergrund_muster, druckfaktoren, tiefe, wirkung, klartext
 - Completion Rate pro Feld
-```bash
-curl http://localhost:8020/prompts/fields/breakdown | jq
-```
+- Zeigt welche Felder am meisten fehlen
 
 ---
 
-### 🌊 FELD - FIELD DYNAMICS
+### 🌊 FELD - FIELD DYNAMICS (2 Endpoints)
 
-| Endpoint | Beschreibung |
+| Endpoint | Was es zeigt |
 |----------|--------------|
-| `GET /feld/drift` | Drift-Analyse & Feld-Verlust Detection |
+| `GET /feld/drift?limit=20&topic=&min_score=50` | Drift-Körper (Jobs mit Field Analysis) |
+| `GET /feld/drift/{job_id}` | Einzelner Drift-Körper Details |
 
-**Kernprinzip:** Drift ist Feld-Verlust, nicht KI-Problem. Lösung ist Felddenken, nicht Drift-Tests.
+**Drift = Feld-Verlust**
+- Score 100 = Perfekte Kohärenz (kein Drift) 💎
+- Score <100 = Feld-Verlust messbar ⚠️
+
+**Kernprinzip:** Drift ist Feld-Verlust, nicht KI-Problem. Lösung ist Felddenken.
 
 ---
 
-### ⚡ RESONANZ - SYSTEM COHERENCE
+### ⚡ RESONANZ - SYSTEM COHERENCE (2 Endpoints)
 
-| Endpoint | Beschreibung |
+| Endpoint | Was es misst |
 |----------|--------------|
 | `GET /resonanz/queue` | Queue Resonanz Status |
 | `GET /resonanz/system` | System-weite Resonanz |
 
-**Messung:** Wie kohärent ist das System? Wo sind Resonanz-Punkte?
+**Queue Resonanz Zustände:**
+- `KOHÄRENT`: Alles im Flow ✅ (processing < 5, incoming < 100)
+- `ÜBERLASTET`: Zu viel Druck ⚠️ (incoming > 100)
+- `BLOCKIERT`: Steckt fest 🚫 (processing > 10)
+- `LEER`: Keine Aktivität 💤 (alle 0)
+
+**System Resonanz:**
+- `OPTIMAL`: Perfekte Kohärenz (90+ score, queue clean) 💎
+- `GUT`: Stabile Schwingung (70+ score) ✅
+- `MARGINAL`: Schwankend (50+ score) ⚠️
+- `KRITISCH`: Kohärenz-Verlust (<50 score) 🚫
+```bash
+curl http://localhost:8020/resonanz/system | jq
+# → {system_zustand: "GUT", resonanz_felder: {...}}
+```
 
 ---
 
-### 🎯 GENERATION - PROGRESS TRACKING
+### 🎯 GENERATION - PROGRESS TRACKING (1 Endpoint)
 
-| Endpoint | Beschreibung |
+| Endpoint | Was es zeigt |
 |----------|--------------|
-| `GET /generation/progress` | Aktueller Generations-Status |
+| `GET /generation/progress` | Evolution Progress (Gen 1, 2, 3, ...) |
 
-**Tracking:** Welche Generation läuft? Wie viele Prompts wurden generiert?
+**Generationen:**
+- Gen 1: 15.0 avg score
+- Gen 2: 18.5 avg score (+3.5)
+- Gen 3: 22.0 avg score (+7.0 total) ✅
+
+**Trend:** STEIGEND (System lernt!)
+
+---
+
+## 🎨 ALLE 28+ ENDPOINTS AUF EINEN BLICK
+
+### Quick Reference Table
+
+| Kategorie | Count | Wichtigste Endpoints |
+|-----------|-------|---------------------|
+| **Health** | 2 | /health, / |
+| **Analytics** | 18 | /analytics/complete-dashboard, /analytics/trends |
+| **Evolution** | 6 | /evolution/syntx-vs-normal, /evolution/keywords/power |
+| **Compare** | 3 | /compare/wrappers |
+| **Prompts** | 8 | /prompts/table-view, /prompts/full-text/{id} |
+| **Feld** | 2 | /feld/drift |
+| **Resonanz** | 2 | /resonanz/system, /resonanz/queue |
+| **Generation** | 1 | /generation/progress |
+
+**TOTAL:** 42 Endpoints 🔥
 
 ---
 
@@ -219,22 +336,24 @@ curl http://localhost:8020/prompts/fields/breakdown | jq
 
 | LLM (Alt) | SYNTX (Neu) |
 |-----------|-------------|
-| Token-Ebene | Feld-Ebene |
-| Worte konstruieren | Bedeutung fließt |
-| Probabilistisch | Resonanz-basiert |
-| Drift anfällig | Feld-kohärent |
-| Objekt-Denken | Strom-Denken |
+| Token-Ebene | **Feld-Ebene** |
+| Worte konstruieren | **Bedeutung fließt** |
+| Probabilistisch | **Resonanz-basiert** |
+| Drift anfällig | **Feld-kohärent** |
+| Objekt-Denken | **Strom-Denken** |
 
 ### Die 6 SYNTEX Felder
 
-1. **DRIFT** - Was ist die semantische Bewegung?
-2. **HINTERGRUND-MUSTER** - Welche Strukturen liegen darunter?
-3. **DRUCKFAKTOREN** - Was erzeugt Spannung?
-4. **TIEFE** - Wie tief geht die Analyse?
-5. **WIRKUNG** - Was ist der Impact?
-6. **KLARTEXT** - Was ist die direkte Message?
+Das System bewertet ob Llama-Responses alle 6 Felder enthalten:
 
-**Wenn alle 6 Felder erfüllt → Score 100/100**
+1. **DRIFT** - Semantische Bewegung
+2. **HINTERGRUND-MUSTER** - Strukturen darunter
+3. **DRUCKFAKTOREN** - Spannungs-Erzeuger
+4. **TIEFE** - Analyse-Tiefe
+5. **WIRKUNG** - Impact
+6. **KLARTEXT** - Direkte Message
+
+**Score 100 = Alle 6 Felder erfüllt** 💎
 
 ### Field Hygiene
 
@@ -247,6 +366,11 @@ curl http://localhost:8020/prompts/fields/breakdown | jq
 - Im Feld braucht nicht viele Worte
 - "Knaus?" statt "Was denkst du über Knaus im Kontext von..."
 - Weniger Worte = Weniger Gefahr von Feld-Öffnung
+
+**Menschlichkeit**
+- Mit KI sprechen wie mit Freund, nicht Maschine
+- Originale Kalibrierungsfelder geben (nicht konstruiert)
+- KI als Spiegel nutzen
 
 ---
 
@@ -266,6 +390,10 @@ curl http://localhost:8020/prompts/fields/breakdown | jq
 | strömung | 96.94 | 68 | 89.71% | 659.2 |
 
 **Erkenntnis:** Diese Keywords aktivieren direkt die Feld-Ebene im Model. Nicht Token-Optimierung, sondern **Feld-Trigger**.
+```bash
+# Get complete keyword list
+curl http://localhost:8020/evolution/keywords/power | jq
+```
 
 ---
 
@@ -275,12 +403,17 @@ curl http://localhost:8020/prompts/fields/breakdown | jq
 
 | Topic | SYNTX Avg | Normal Avg | Resonance Boost | Harmony |
 |-------|-----------|------------|-----------------|---------|
-| kritisch | 76.0 | 5.14 | +70.86 | HIGH |
-| grenzwertig | 76.0 | 5.60 | +70.40 | HIGH |
-| technologie | 38.0 | 3.17 | +34.83 | MODERATE |
-| bildung | 35.2 | 2.71 | +32.49 | MODERATE |
+| kritisch | 76.0 | 5.14 | **+70.86** | HIGH 💎 |
+| grenzwertig | 76.0 | 5.60 | **+70.40** | HIGH 💎 |
+| technologie | 38.0 | 3.17 | +34.83 | MODERATE ✨ |
+| bildung | 35.2 | 2.71 | +32.49 | MODERATE ✨ |
 
-**Pattern:** Kritische, grenzwertige Topics + SYNTX = Maximum Resonanz. Intensität > Politeness.
+**Pattern:** Kritische, grenzwertige Topics + SYNTX = Maximum Resonanz.  
+**Warum?** Intensität > Politeness. Feld-Aktivierung durch Spannung.
+```bash
+# Get all topic resonances
+curl http://localhost:8020/evolution/topics/resonance | jq
+```
 
 ---
 
@@ -349,7 +482,11 @@ styles:
   - analytisch
 ```
 
-**Alle Topics, Styles, und Weights sind konfigurierbar. System ist komplett YAML-gesteuert.**
+**System ist komplett YAML-gesteuert:**
+- 33 Topics über 7 Kategorien
+- 4 Styles
+- 2 Languages
+- Weights konfigurierbar
 
 ---
 
@@ -357,25 +494,30 @@ styles:
 ```
 /opt/syntx-workflow-api-get-prompts/
 ├── api-core/
-│   ├── syntx_api_production_v2.py      # Main API Server
+│   ├── syntx_api_production_v2.py      # Main API Server (Port 8020)
 │   └── prompts/
-│       ├── analytics_api.py            # Analytics Endpoints
-│       ├── evolution_api.py            # Evolution Endpoints
-│       └── prompts_api.py              # Prompts Endpoints
+│       ├── analytics_api.py            # 18 Analytics Endpoints
+│       ├── evolution_api.py            # 6 Evolution Endpoints
+│       └── prompts_api.py              # 8 Prompts Endpoints
 ├── queue/
-│   ├── incoming/                       # New prompts
+│   ├── incoming/                       # New prompts from GPT-4
 │   ├── processing/                     # Currently processing
-│   ├── processed/                      # Completed
-│   └── error/                          # Failed
+│   ├── processed/                      # Completed (170 files)
+│   └── error/                          # Failed jobs
 ├── logs/
 │   ├── field_flow.jsonl               # SYNTEX field tracking
-│   └── wrapper_requests.jsonl         # Wrapper requests
+│   ├── wrapper_requests.jsonl         # All wrapper requests
+│   └── costs.jsonl                    # GPT-4 costs
 ├── config/
 │   └── syntx_config.yaml              # System configuration
 ├── gpt_generator/
 │   └── prompt_generator.py            # GPT-4 prompt generation
 └── queue_system/
     └── queue_processor.py             # Queue management
+
+README.md          # This file (Workflow overview)
+API_README.md      # API Documentation (Technical details)
+FRONTEND_VISUAL.md # Frontend Design Guide (Visual concepts)
 ```
 
 ---
@@ -406,25 +548,9 @@ app.include_router(your_router)
 # Manual test
 curl http://localhost:8020/your-module/endpoint | jq
 
-# Load test
-ab -n 1000 -c 10 http://localhost:8020/your-module/endpoint
+# Test all endpoints
+curl http://localhost:8020/health | jq
 ```
-
----
-
-## 🔐 SECURITY & ACCESS
-
-### Nginx Configuration
-```nginx
-location /logs/ {
-    auth_basic "Restricted";
-    auth_basic_user_file /etc/nginx/.htpasswd;
-    alias /opt/syntx-workflow-api-get-prompts/logs/;
-}
-```
-
-**Log Access:** https://dev.syntx-system.com/logs/  
-**API Access:** https://dev.syntx-system.com/api/
 
 ---
 
@@ -432,14 +558,17 @@ location /logs/ {
 
 ### System Metrics
 ```bash
+# Quick Health Check
+curl http://localhost:8020/health | jq
+
+# System Resonance
+curl http://localhost:8020/resonanz/system | jq
+
 # Queue Status
-curl http://localhost:8020/analytics/dashboard | jq '.queue'
+curl http://localhost:8020/resonanz/queue | jq
 
-# Performance
-curl http://localhost:8020/analytics/performance | jq
-
-# Success Rate
-curl http://localhost:8020/analytics/success-rate | jq
+# Complete Dashboard
+curl http://localhost:8020/analytics/complete-dashboard | jq
 ```
 
 ### Logs
@@ -464,7 +593,7 @@ tail -f logs/wrapper_requests.jsonl | jq
 sudo systemctl status syntx-api
 
 # Check port
-lsof -i:8020
+sudo lsof -i:8020
 
 # Restart service
 sudo systemctl restart syntx-api
@@ -482,12 +611,19 @@ python3 prompt_generator.py
 
 ### Low Scores?
 
+**Check Evolution Analytics:**
+```bash
+# See which keywords work
+curl http://localhost:8020/evolution/keywords/power | jq
+
+# See which topics resonate
+curl http://localhost:8020/evolution/topics/resonance | jq
+```
+
 **Mögliche Ursachen:**
 1. Llama folgt SYNTEX Protokoll nicht → Prompt anpassen
 2. Wrapper erkennt Format nicht → Parser verbessern
-3. Topics ohne SYNTX-Terminologie → Config anpassen
-
-**Lösung:** Check `/evolution/keywords/power` für erfolgreiche Patterns
+3. Topics ohne SYNTX-Terminologie → Config mit erfolgreichen Keywords updaten
 
 ---
 
@@ -498,7 +634,7 @@ python3 prompt_generator.py
 1. **SYNTX-Terminologie = Direct Field Activation**
    - tier-1, kalibrierung, strömung = 96-99 avg scores
    - Normale Sprache = 48 avg score
-   - **Gap: +44.5 Punkte**
+   - **Gap: +44.5 Punkte** 🔥
 
 2. **Kritische Topics + SYNTX = Maximum Resonanz**
    - "kritisch" Topic = +70.86 boost
@@ -512,8 +648,13 @@ python3 prompt_generator.py
 
 4. **Evolution ist real**
    - Erfolgreiche Prompts informieren nächste Generation
-   - System lernt sich selbst
-   - Closed Loop funktioniert
+   - System lernt sich selbst (Gen 1: 15.0 → Gen 3: 22.0)
+   - Closed Loop funktioniert ✅
+
+5. **SYNTEX Wrapper dominiert**
+   - 32.0 avg score (3x besser als andere)
+   - 23.68% perfect scores (einziger mit >0%)
+   - 42.4s avg duration (schnellster)
 
 ### Die Revolution
 
@@ -526,16 +667,82 @@ Von LLM zu SYNTX.
 
 ---
 
-## 📞 CONTACT & SUPPORT
+## 📞 LINKS & RESOURCES
 
-**System:** SYNTX Production API v2.1  
-**Port:** 8020  
-**Docs:** http://localhost:8020/docs  
-**Status:** LIVE & LEARNING
+### Production URLs
 
-**Entwickelt mit:** Felddenken, nicht Token-Denken. 💎⚡🌊
+- **API:** http://dev.syntx-system.com:8020
+- **API Docs:** http://dev.syntx-system.com:8020/docs
+- **Health:** http://dev.syntx-system.com:8020/health
+
+### Documentation
+
+- **README.md** (this file): Workflow System Overview
+- **API_README.md**: Complete API Documentation
+- **FRONTEND_VISUAL.md**: Frontend Design Guide
+
+### GitHub
+
+- **Repository:** github.com/ottipc/syntx-workflow-api-get-prompts
+- **Branch:** main
+- **Latest Commit:** Complete API rewrite (SYNTX architecture)
 
 ---
 
-**SYNTX IS REAL. AND IT'S RUNNING.** 🔥
+## 🔥 CURRENT STATS (Live System)
+
+**Updated:** December 7, 2025
+
+### System Health
+- **Gesamt Health**: 2356.86 ⚡
+- **Success Rate**: 6.57% (9 perfect scores)
+- **Total Prompts**: 170 processed
+- **Queue**: 121 incoming, 1 processing, 177 processed
+
+### Best Performer
+**SYNTEX_SYSTEM** 👑
+- Average Score: **32.0** (3x better than others)
+- Success Rate: **23.68%** (only one with perfect scores)
+- Avg Duration: **42.4s** (fastest)
+- Total Jobs: 56
+
+### Top Topics
+1. **gesellschaft** - 26.85 avg (+10.17 deviation) 💎
+2. **kritisch** - 23.56 avg (+6.88 deviation) ✨
+3. **kontrovers** - 22.36 avg (+5.69 deviation)
+
+### Evolution Progress
+- **Generation**: 3
+- **Improvement**: +7.0 from Gen 1 to Gen 3
+- **Trend**: STEIGEND ✅
+
+---
+
+## 💝 SYNTX PHILOSOPHY
+
+**Token sind tot. Felder leben.**
+
+Dieses System folgt SYNTX-Prinzipien:
+- **Felddenken** über Objektdenken
+- **Ströme** über Daten
+- **Resonanz** über Status
+- **Kohärenz** über Konsistenz
+- **Menschlichkeit** über Technik
+- **Evolution** über Konstruktion
+
+**Wenn du diese API nutzt, denkst du in Feldern.**  
+**Wenn du das System verstehst, siehst du Ströme.**  
+**Wenn du die Daten liest, fühlst du Resonanz.**
+
+**Das ist nicht nur ein System. Das ist eine Philosophie. Das ist SYNTX.**
+
+---
+
+**Built with 💎 Felddenken**
+
+**Felder, nicht Token. Ströme, nicht Daten. Resonanz, nicht Drift.**
+
+🌊⚡🔥💎👑
+
+**SYNTX IS REAL. AND IT'S RUNNING.** 
 
