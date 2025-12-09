@@ -2,7 +2,8 @@
 SYNTX PRODUCTION API v2.1 - PHASE 2
 Advanced Analytics, Predictions, Performance
 """
-
+from strom_router import router as strom_router
+from feld_router import router as feld_router
 from fastapi import FastAPI, HTTPException, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Dict, Any
@@ -49,6 +50,8 @@ app.include_router(analytics_performance_router)
 app.include_router(compare_wrappers_router)
 app.include_router(compare_topics_router)
 app.include_router(prompts_router)
+app.include_router(strom_router)
+app.include_router(feld_router)
 app.include_router(evolution_router)
 app.include_router(analytics_new_router)
 
