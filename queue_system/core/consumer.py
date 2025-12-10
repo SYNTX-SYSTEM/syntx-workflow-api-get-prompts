@@ -221,7 +221,8 @@ class QueueConsumer:
                     'duration_ms': result_meta.get('duration_ms'),
                     'session_id': result_meta.get('session_id'),
                     'wrapper': self.wrapper_name,
-                    'worker_id': self.worker_id
+                    'worker_id': self.worker_id,
+                    'response_text': response  # ← RESPONSE SPEICHERN!
                 }
                 
                 # SYNTX Response in TXT File schreiben

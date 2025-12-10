@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query, HTTPException
 from pathlib import Path
 import json
 from typing import Optional, Dict, List
+from datetime import datetime
 from collections import defaultdict, Counter
 
 router = APIRouter(prefix="/prompts", tags=["prompts"])
@@ -351,5 +352,226 @@ async def get_full_prompt_text(filename: str):
         "wrapper": result.get('wrapper', 'unknown') if result and isinstance(result, dict) else 'unknown',
         "gpt_quality": data.get('gpt_quality', {}),
         "gpt_cost": data.get('gpt_cost', {})
+    }
+
+
+# ============================================================================
+# COMPLETE EXPORT - ALLES MIT VOLLTEXT
+# ============================================================================
+
+
+# ============================================================================
+# COMPLETE EXPORT - ALLES MIT VOLLTEXT + PAGINATION
+# ============================================================================
+
+def load_all_calibrations() -> Dict[str, Dict]:
+    """Load all calibrations and index by timestamp for matching"""
+    calibrations_file = LOGS_DIR / "syntex_calibrations.jsonl"
+    calibrations = []
+    
+    if not calibrations_file.exists():
+        return {}
+    
+    try:
+        with open(calibrations_file, 'r') as f:
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                    if entry.get('response') and entry.get('timestamp'):
+                        calibrations.append(entry)
+                except:
+                    continue
+    except:
+        pass
+    
+    return calibrations
+
+def find_response_by_timestamp(processed_timestamp: str, calibrations: list) -> str:
+    """Find calibration response by nearest timestamp match"""
+    if not processed_timestamp or not calibrations:
+        return "[No response available]"
+    
+    try:
+        # Parse processed timestamp (format: 2025-12-06T00:26:05.595595)
+        proc_dt = datetime.fromisoformat(processed_timestamp.replace('Z', '+00:00'))
+        
+        # Find nearest calibration by time
+        best_match = None
+        min_diff = float('inf')
+        
+        for cal in calibrations:
+            try:
+                # Parse calibration timestamp (format: 2025-12-10T00:19:55.093607Z)
+                cal_dt = datetime.fromisoformat(cal['timestamp'].replace('Z', '+00:00'))
+                diff = abs((proc_dt - cal_dt).total_seconds())
+                
+                # Only match if within 5 minutes (300 seconds)
+                if diff < min_diff and diff < 300:
+                    min_diff = diff
+                    best_match = cal
+            except:
+                continue
+        
+        if best_match:
+            return best_match.get('response', '[Response found but empty]')
+        
+        return "[No matching response found]"
+    except Exception as e:
+        return f"[Error matching: {e}]"
+
+
+@router.get("/complete-export")
+async def complete_export(
+    page: int = Query(1, ge=1, description="Page number (starts at 1)"),
+    page_size: int = Query(50, ge=1, le=200, description="Items per page"),
+    min_score: float = Query(0, description="Minimum score filter"),
+    topic: Optional[str] = Query(None, description="Filter by topic"),
+    wrapper: Optional[str] = Query(None, description="Filter by wrapper")
+):
+    """
+    🔥 COMPLETE EXPORT - ALLES MIT VOLLTEXT + PAGINATION
+    
+    Returns:
+    - Full prompt text (from .txt files)
+    - Full response text (from syntex_calibrations.jsonl)
+    - All SYNTEX fields breakdown
+    - All quality scores
+    - All metadata
+    
+    Pagination:
+    - page: Which page (1, 2, 3, ...)
+    - page_size: Items per page (max 200)
+    
+    Example:
+    - /prompts/complete-export?page=1&page_size=50
+    - /prompts/complete-export?page=2&page_size=50&min_score=80
+    """
+    
+    # Load all data
+    processed = load_all_processed()
+    
+    if not processed:
+        return {"status": "NO_DATA"}
+    
+    # Filters
+    if min_score > 0:
+        processed = [p for p in processed if safe_get_score(p) >= min_score]
+    
+    if topic:
+        processed = [p for p in processed if p.get('topic', '').lower() == topic.lower()]
+    
+    if wrapper:
+        filtered = []
+        for p in processed:
+            result = p.get('syntex_result')
+            if result and isinstance(result, dict):
+                if result.get('wrapper', '').lower() == wrapper.lower():
+                    filtered.append(p)
+        processed = filtered
+    
+    # Calculate pagination
+    total_items = len(processed)
+    total_pages = (total_items + page_size - 1) // page_size  # Ceiling division
+    
+    # Validate page
+    if page > total_pages and total_pages > 0:
+        return {
+            "status": "PAGE_OUT_OF_RANGE",
+            "page": page,
+            "total_pages": total_pages,
+            "total_items": total_items
+        }
+    
+    # Get page slice
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    page_items = processed[start_idx:end_idx]
+    
+    # Build complete export
+    exports = []
+    
+    for p in page_items:
+        # Load prompt text
+        prompt_text = ""
+        txt_filename = p.get('filename', '')
+        if txt_filename:
+            prompt_file = QUEUE_DIR / "processed" / txt_filename
+            if prompt_file.exists():
+                try:
+                    with open(prompt_file) as f:
+                        prompt_text = f.read()
+                except:
+                    prompt_text = "[Error reading prompt]"
+        
+        # Get response directly from JSON (now stored there!)
+        result = p.get('syntex_result')
+        if result and isinstance(result, dict):
+            response_text = result.get('response_text', '[Response not stored]')
+        else:
+            response_text = '[Response not stored]'
+        
+        # Get fields
+        fields = safe_get_fields(p)
+        
+        # Get result safely
+        result = p.get('syntex_result')
+        if not result or not isinstance(result, dict):
+            result = {}
+        
+        # Build export item
+        export_item = {
+            "id": p.get('filename', 'unknown'),
+            "timestamp": p.get('processed_at', ''),
+            
+            # Prompt Data
+            "prompt": {
+                "text": prompt_text,
+                "topic": p.get('topic', 'unknown'),
+                "style": p.get('style', 'unknown'),
+                "category": p.get('category', 'unknown'),
+                "language": p.get('language', 'de')
+            },
+            
+            # Response Data
+            "response": {
+                "text": response_text,
+                "wrapper": result.get('wrapper', 'unknown'),
+                "duration_ms": result.get('duration_ms', 0)
+            },
+            
+            # Quality Assessment
+            "quality": {
+                "total_score": safe_get_score(p),
+                "fields_fulfilled": [k for k, v in fields.items() if v],
+                "fields_missing": [k for k, v in fields.items() if not v],
+                "field_breakdown": fields,
+                "completion_rate": f"{len([v for v in fields.values() if v])}/6"
+            },
+            
+            # GPT Metadata
+            "gpt_metadata": {
+                "quality_assessment": p.get('gpt_quality', {}),
+                "cost": p.get('gpt_cost', {})
+            }
+        }
+        
+        exports.append(export_item)
+    
+    return {
+        "status": "COMPLETE_EXPORT",
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_items": total_items,
+            "total_pages": total_pages,
+            "has_next": page < total_pages,
+            "has_prev": page > 1
+        },
+        "filters": {
+            "min_score": min_score,
+            "topic": topic,
+            "wrapper": wrapper
+        },
+        "exports": exports
     }
 
