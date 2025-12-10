@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SYNTX FELD-INSPEKTOR
-# Ueberprueft alle im Protokoll gelisteten Endpunkte und gibt die JSON-Antwort formatiert aus.
+# Überprüft alle im Protokoll gelisteten Endpunkte und gibt die JSON-Antwort formatiert aus.
 
 BASE_URL="https://dev.syntx-system.com"
 ENDPOINT_PATHS=(
@@ -27,10 +27,12 @@ ENDPOINT_PATHS=(
     "/feld/topics"
     "/feld/prompts"
     "/prompts/costs/total"
-    # HINWEIS: / (ROOT) wird ignoriert, da es ein REDIRECT (302) ist und kein JSON liefert.
+    # NEW: Complete Export
+    "/prompts/complete-export?page=1&page_size=2"
+    "/prompts/complete-export?page=1&page_size=1&min_score=95"
 )
 
-# Pruefen, ob jq installiert ist
+# Prüfen, ob jq installiert ist
 if ! command -v jq &> /dev/null
 then
     echo "⚠️ KRITISCHER FEHLER: jq (JSON processor) ist nicht installiert."
@@ -42,20 +44,20 @@ echo "--- ⚡️ STARTE SYNTX-FELD-INSPEKTION ---"
 echo "TARGET: ${BASE_URL}"
 echo ""
 
-# Iteriere ueber alle Endpunkte
+# Iteriere über alle Endpunkte
 for path in "${ENDPOINT_PATHS[@]}"; do
     URL="${BASE_URL}${path}"
     
     echo "=========================================================="
     echo "➡️ ENDPUNKT: ${path}"
     
-    # Fuehre curl aus und speichere Statuscode und Body getrennt
+    # Führe curl aus und speichere Statuscode und Body getrennt
     HTTP_STATUS=$(curl -s -o /tmp/response.txt -w "%{http_code}" "$URL")
     RESPONSE_BODY=$(cat /tmp/response.txt)
     
     echo "STATUS CODE: ${HTTP_STATUS}"
     
-    # Pruefe, ob der Status erfolgreich ist (2xx)
+    # Prüfe, ob der Status erfolgreich ist (2xx)
     if [[ "$HTTP_STATUS" =~ ^2 ]]; then
         # Versuche, den Body als JSON zu parsen und zu formatieren
         FORMATTED_JSON=$(echo "$RESPONSE_BODY" | jq .)
@@ -63,17 +65,17 @@ for path in "${ENDPOINT_PATHS[@]}"; do
         if [ $? -eq 0 ]; then
             echo "RESPONSE BODY (JSON):"
             echo "${FORMATTED_JSON}" | head -n 30
-            echo "[... JSON gekuerzt, nur die ersten 30 Zeilen]"
+            echo "[... JSON gekürzt, nur die ersten 30 Zeilen]"
         else
             echo "RESPONSE BODY (NICHT-JSON oder Leer):"
             echo "${RESPONSE_BODY}" | head -n 10
-            echo "[... Inhalt gekuerzt]"
+            echo "[... Inhalt gekürzt]"
         fi
     else
         # Bei Fehler oder Redirect
         echo "RESPONSE BODY (Fehler/Redirect):"
         echo "${RESPONSE_BODY}" | head -n 10
-        echo "[... Inhalt gekuerzt]"
+        echo "[... Inhalt gekürzt]"
     fi
     echo ""
 done
