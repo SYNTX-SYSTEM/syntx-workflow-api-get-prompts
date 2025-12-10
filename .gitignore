@@ -71,3 +71,4 @@ logs/
 syntex_injector/logs/
 logs/*.jsonl
 *.bak
+*.backup
