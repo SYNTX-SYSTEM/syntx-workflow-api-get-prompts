@@ -78,6 +78,9 @@ async def get_all_prompts(limit: int = Query(100, le=500)):
     """Get all prompts metadata (no text)"""
     processed = load_all_processed()
     
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
+    
     # Build clean metadata
     results = []
     for p in processed[:limit]:
@@ -102,6 +105,9 @@ async def get_by_job(job_id: str):
     """Get specific job by ID"""
     processed = load_all_processed()
     
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
+    
     for p in processed:
         if job_id in str(p.get('filename', '')):
             return {
@@ -115,6 +121,9 @@ async def get_by_job(job_id: str):
 async def get_best_prompts(limit: int = Query(20, le=100)):
     """Best performing prompts"""
     processed = load_all_processed()
+    
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
     
     # Sort by score
     sorted_prompts = sorted(processed, key=lambda p: safe_get_score(p), reverse=True)
@@ -143,6 +152,9 @@ async def get_best_prompts(limit: int = Query(20, le=100)):
 async def fields_breakdown():
     """Field completion analysis"""
     processed = load_all_processed()
+    
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
     
     field_stats = {
         'drift': {'present': 0, 'absent': 0},
@@ -177,6 +189,9 @@ async def total_costs():
     """Total GPT costs"""
     processed = load_all_processed()
     
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
+    
     total_cost = 0.0
     total_tokens = {"input": 0, "output": 0}
     
@@ -199,6 +214,9 @@ async def total_costs():
 async def search_prompts(q: str = Query(..., min_length=2)):
     """Search in prompts"""
     processed = load_all_processed()
+    
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
     
     q_lower = q.lower()
     results = []
@@ -239,6 +257,9 @@ async def prompts_table_view(
     
     processed = load_all_processed()
     
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
+    
     # Filters
     if min_score > 0:
         processed = [p for p in processed if safe_get_score(p) >= min_score]
@@ -275,7 +296,7 @@ async def prompts_table_view(
             "category": p.get('category', 'unknown'),
             "score": safe_get_score(p),
             "fields_fulfilled": fields_fulfilled,
-            "field_count": f"{len(fields_fulfilled)}/6",
+            "field_count": f"{len(fields_fulfilled)}/{len(fields) if fields else 6}",
             "duration_ms": duration_ms,
             "wrapper": wrapper
         }
@@ -450,6 +471,9 @@ async def complete_export(
     # Load all data
     processed = load_all_processed()
     
+    # Sort by timestamp (newest first)
+    processed.sort(key=lambda x: x.get("processed_at", ""), reverse=True)
+    
     if not processed:
         return {"status": "NO_DATA"}
     
@@ -558,7 +582,7 @@ async def complete_export(
                 "fields_fulfilled": [k for k, v in fields.items() if v],
                 "fields_missing": [k for k, v in fields.items() if not v],
                 "field_breakdown": fields,
-                "completion_rate": f"{len([v for v in fields.values() if v])}/6"
+                "completion_rate": f"{len([v for v in fields.values() if v])}/{len(fields) if fields else 6}"
             },
             
             # GPT Metadata
