@@ -73,3 +73,11 @@ logs/*.jsonl
 *.bak
 *.backup
 backup_logs_*
+
+# SYNTX Logs (Training Data)
+logs/*.jsonl
+logs/*.log
+*.log
+
+# Deprecated backups
+api-core/deprecated/backups/
