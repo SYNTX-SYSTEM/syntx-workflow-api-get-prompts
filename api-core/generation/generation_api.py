@@ -484,3 +484,300 @@ async def resonanz_parameter():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# 🌊 TOPIC WEIGHTS ENDPOINTS
+from .topic_weights_handler import (
+    load_topic_weights,
+    save_topic_weights,
+    get_topic_weight,
+    update_topic_weight
+)
+
+@router.get("/topic-weights")
+async def get_topic_weights():
+    """
+    🌊 GET TOPIC WEIGHTS
+    Hole alle gespeicherten Topic-Gewichtungen
+    """
+    try:
+        weights = load_topic_weights()
+        return {
+            "erfolg": True,
+            "weights": weights,
+            "anzahl": len(weights)
+        }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e),
+            "weights": {}
+        }
+
+@router.put("/topic-weights")
+async def update_topic_weights(request: dict):
+    """
+    🌊 UPDATE TOPIC WEIGHTS
+    Speichere Topic-Gewichtungen
+    
+    Body:
+    {
+        "weights": {
+            "Quantencomputer": 0.8,
+            "Künstliche Intelligenz": 0.9,
+            ...
+        }
+    }
+    """
+    try:
+        weights = request.get('weights', {})
+        
+        if not weights:
+            return {
+                "erfolg": False,
+                "fehler": "Keine Gewichtungen übergeben"
+            }
+        
+        # Validate weights (0-1)
+        for topic, weight in weights.items():
+            if not 0 <= weight <= 1:
+                return {
+                    "erfolg": False,
+                    "fehler": f"Ungültige Gewichtung für {topic}: {weight} (muss 0-1 sein)"
+                }
+        
+        success = save_topic_weights(weights)
+        
+        return {
+            "erfolg": success,
+            "gespeichert": len(weights),
+            "message": f"✅ {len(weights)} Topic-Gewichtungen gespeichert"
+        }
+        
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+@router.get("/topic-weights/{topic_name}")
+async def get_single_topic_weight(topic_name: str):
+    """
+    🌊 GET SINGLE TOPIC WEIGHT
+    Hole Gewichtung für ein einzelnes Topic
+    """
+    try:
+        weight = get_topic_weight(topic_name)
+        return {
+            "erfolg": True,
+            "topic": topic_name,
+            "weight": weight
+        }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+@router.put("/topic-weights/{topic_name}")
+async def update_single_topic_weight(topic_name: str, request: dict):
+    """
+    🌊 UPDATE SINGLE TOPIC WEIGHT
+    Update Gewichtung für ein einzelnes Topic
+    
+    Body:
+    {
+        "weight": 0.75
+    }
+    """
+    try:
+        weight = request.get('weight')
+        
+        if weight is None:
+            return {
+                "erfolg": False,
+                "fehler": "Keine Gewichtung übergeben"
+            }
+        
+        if not 0 <= weight <= 1:
+            return {
+                "erfolg": False,
+                "fehler": f"Ungültige Gewichtung: {weight} (muss 0-1 sein)"
+            }
+        
+        success = update_topic_weight(topic_name, weight)
+        
+        return {
+            "erfolg": success,
+            "topic": topic_name,
+            "weight": weight,
+            "message": f"✅ Gewichtung für {topic_name} auf {weight} gesetzt"
+        }
+        
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+# Import extended handler
+from .cron_extended_handler import (
+    get_cron_logs,
+    get_cron_stats,
+    get_cron_by_id,
+    update_cron_config,
+    trigger_cron_manually,
+    get_cron_impact
+)
+
+# ==========================================
+
+# ==========================================
+# KRONTUN ENDPOINTS
+# ==========================================
+
+# Import extended handler
+try:
+    from .cron_extended_handler import (
+        get_cron_logs,
+        get_cron_stats,
+        get_cron_by_id,
+        update_cron_config,
+        trigger_cron_manually,
+        get_cron_impact
+    )
+except ImportError:
+    from cron_extended_handler import (
+        get_cron_logs,
+        get_cron_stats,
+        get_cron_by_id,
+        update_cron_config,
+        trigger_cron_manually,
+        get_cron_impact
+    )
+
+
+@router.get("/kalibrierung/cron/stats")
+async def get_cron_statistics():
+    """
+    Echtzeit Stats für LiveQueueOverview
+    """
+    try:
+        stats = get_cron_stats()
+        return {
+            "erfolg": True,
+            **stats
+        }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+
+@router.get("/kalibrierung/cron/logs")
+async def get_cron_execution_logs(
+    limit: int = 100,
+    cron_id: str = None
+):
+    """
+    Holt Cron Execution History
+    """
+    try:
+        logs = get_cron_logs(limit=limit, cron_id=cron_id)
+        return {
+            "erfolg": True,
+            "anzahl": len(logs),
+            "logs": logs
+        }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+
+@router.get("/kalibrierung/cron/impact")
+async def get_cron_impact_analytics():
+    """
+    Impact Analytics für Heatmap
+    Topics x Time = Prompt Count
+    WICHTIG: Muss VOR /{cron_id} kommen!
+    """
+    try:
+        impact = get_cron_impact()
+        return {
+            "erfolg": True,
+            **impact
+        }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+
+@router.get("/kalibrierung/cron/{cron_id}")
+async def get_cron_details(cron_id: str):
+    """
+    Holt Details zu einem einzelnen Cron
+    """
+    try:
+        details = get_cron_by_id(cron_id)
+        
+        if not details:
+            return {
+                "erfolg": False,
+                "fehler": f"Cron {cron_id} nicht gefunden"
+            }
+        
+        return {
+            "erfolg": True,
+            **details
+        }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+
+@router.put("/kalibrierung/cron/{cron_id}")
+async def update_cron(cron_id: str, updates: dict):
+    """
+    Updated einen Cron (Zeit, Felder, etc.)
+    """
+    try:
+        success = update_cron_config(cron_id, updates)
+        
+        if success:
+            return {
+                "erfolg": True,
+                "cron_id": cron_id,
+                "message": "Cron erfolgreich aktualisiert",
+                "updates": updates
+            }
+        else:
+            return {
+                "erfolg": False,
+                "fehler": "Update fehlgeschlagen"
+            }
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }
+
+
+@router.post("/kalibrierung/cron/{cron_id}/run")
+async def trigger_cron(cron_id: str):
+    """
+    Triggert einen Cron manuell
+    """
+    try:
+        result = trigger_cron_manually(cron_id)
+        return result
+    except Exception as e:
+        return {
+            "erfolg": False,
+            "fehler": str(e)
+        }

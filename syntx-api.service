@@ -1,14 +1,13 @@
 [Unit]
-Description=SYNTX Felder API Service 🌊
+Description=SYNTX Production API v2 - Strom Orchestrator 🌊
 After=network.target
 Wants=network.target
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/syntx-workflow-api-get-prompts
-Environment=PATH=/opt/syntx-workflow-api-get-prompts/venv/bin
-ExecStart=/opt/syntx-workflow-api-get-prompts/venv/bin/python3 api-core/syntx_api_server.py
+WorkingDirectory=/opt/syntx-workflow-api-get-prompts/api-core
+ExecStart=/opt/syntx-workflow-api-get-prompts/venv/bin/python3 /opt/syntx-workflow-api-get-prompts/api-core/syntx_api_production_v2.py
 Restart=always
 RestartSec=5
 StandardOutput=journal
