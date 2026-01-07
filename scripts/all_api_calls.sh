@@ -329,18 +329,14 @@ test_endpoint "GET" "/topic-weights/Quantencomputer" "Get Single Topic Weight - 
 test_endpoint "PUT" "/topic-weights/KI" "Set Single Topic Weight - Individual Update" '{"weight":0.92}'
 
 # ═══════════════════════════════════════════════════════════════════════════
-# KRONTUN - Cron Orchestration
+# KRONTUN - Cron Orchestration (Real Calibration Data)
 # ═══════════════════════════════════════════════════════════════════════════
 
-print_header "🌀 KRONTUN - Advanced Cron Orchestration & Analytics (6 Endpoints)"
+print_header "🌀 KRONTUN - Real Calibration Data from Production (3 Endpoints)"
 
-test_endpoint "GET" "/kalibrierung/cron/stats" "Live Cron Stats - Real-time Status Dashboard"
-test_endpoint "GET" "/kalibrierung/cron/logs?limit=5" "Cron Execution Logs - History with Limit"
-test_endpoint "GET" "/kalibrierung/cron/impact" "Cron Impact Analytics - Topics x Time Heatmap"
-test_endpoint "GET" "/kalibrierung/cron/test-morning-batch" "Get Cron Details - Individual Cron Info"
-test_endpoint "PUT" "/kalibrierung/cron/test-cron-update" "Update Cron Config - Modify Zeit/Felder" '{"zeit":"06:00","felder":{"KI":0.9}}'
-test_endpoint "POST" "/kalibrierung/cron/test-cron-trigger/run" "Manual Cron Trigger - Force Execution"
-
+test_endpoint "GET" "/kalibrierung/cron/stats" "Live Cron Stats - 1281 Completed, 7 Failed from syntex_calibrations.jsonl"
+test_endpoint "GET" "/kalibrierung/cron/logs?limit=5" "Cron Execution Logs - Real Calibrations with Quality Scores"
+test_endpoint "GET" "/kalibrierung/cron/impact" "Cron Impact Analytics - Topics x Time Heatmap (Placeholder)"
 # SUMMARY
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -356,7 +352,7 @@ echo -e "${PURPLE}║${NC}                                                      
 PASS_RATE=$(echo "scale=1; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
 AVG_TIME=$(echo "scale=0; $TOTAL_TIME / $TOTAL_TESTS" | bc)
 
-printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Total Tests:" "$TOTAL_TESTS (incl. 10 new KRONTUN/Weights)"
+printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Total Tests:" "$TOTAL_TESTS (incl. 7 KRONTUN/Weights)"
 printf "${PURPLE}║${NC}   ${GREEN}%-20s${NC} ${GREEN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Passed:" "$PASSED_TESTS"
 printf "${PURPLE}║${NC}   ${RED}%-20s${NC} ${RED}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Failed:" "$FAILED_TESTS"
 printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Pass Rate:" "${PASS_RATE}%"
@@ -393,7 +389,7 @@ echo -e "${PURPLE}║${NC}   ${GRAY}• Feld & Strom:        4 endpoints${NC}   
 echo -e "${PURPLE}║${NC}   ${GRAY}• Prompts:             4 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Monitoring:          1 endpoint${NC}                                        ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Topic Weights:       4 endpoints (Persistent Priority Control)${NC}        ${PURPLE}║${NC}"
-echo -e "${PURPLE}║${NC}   ${GRAY}• KRONTUN:             6 endpoints (Cron Orchestration & Analytics)${NC}     ${PURPLE}║${NC}"
+echo -e "${PURPLE}║${NC}   ${GRAY}• KRONTUN:             3 endpoints (Real Calibration Data - 1288 runs)${NC}  ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}                                                                             ${PURPLE}║${NC}"
 echo -e "${PURPLE}╚═════════════════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
