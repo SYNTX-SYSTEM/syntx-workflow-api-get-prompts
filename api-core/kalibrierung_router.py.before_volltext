@@ -20,7 +20,7 @@ async def get_cron_logs(limit: int = Query(100, le=500)):
                 try:
                     data = json.loads(line.strip())
                     
-                    # Extract cron info with VOLLTEXT stages
+                    # Extract cron info
                     log = {
                         "cron_id": f"calibration-{data['timestamp'][:19]}",
                         "timestamp": data['timestamp'],
@@ -30,21 +30,13 @@ async def get_cron_logs(limit: int = Query(100, le=500)):
                             "anzahl": 1,
                             "felder": _extract_fields(data)
                         },
-                        # 🔥 NEW: VOLLTEXT STAGES
-                        "stages": {
-                            "gpt_system_prompt": data.get('system', ''),
-                            "gpt_output_meta_prompt": data.get('meta_prompt', ''),
-                            "mistral_input": data.get('meta_prompt', ''),
-                            "mistral_output": data.get('response', ''),
-                            "parsed_fields": data.get('parsed_fields', {})
-                        },
                         "result": {
                             "status": "completed" if data['success'] else "failed",
                             "generated": 1 if data['success'] else 0,
                             "failed": 0 if data['success'] else 1,
                             "avg_quality": data.get('quality_score', {}).get('total_score', 0),
                             "drift": _calculate_drift(data),
-                            "cost": data.get('cost', 0.01),
+                            "cost": 0.01,
                             "duration_ms": data.get('duration_ms', 0)
                         }
                     }

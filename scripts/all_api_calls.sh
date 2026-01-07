@@ -399,3 +399,22 @@ echo -e "${PURPLE}════════════════════�
 echo ""
 
 exit $FAILED_TESTS
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST VOLLTEXT STAGES
+# ═══════════════════════════════════════════════════════════════════════════
+
+echo ""
+echo -e "${CYAN}🔥 Testing VOLLTEXT stages in logs...${NC}"
+echo ""
+
+# Get one log with stages
+STAGES_TEST=$(curl -s "https://dev.syntx-system.com/api/strom/kalibrierung/cron/logs?limit=1" | jq '.logs[0].stages | keys')
+
+if [ -n "$STAGES_TEST" ] && [ "$STAGES_TEST" != "null" ]; then
+    echo -e "${GREEN}✅ VOLLTEXT STAGES FOUND!${NC}"
+    echo -e "${CYAN}Keys: $STAGES_TEST${NC}"
+else
+    echo -e "${RED}❌ NO STAGES FOUND!${NC}"
+fi
+
