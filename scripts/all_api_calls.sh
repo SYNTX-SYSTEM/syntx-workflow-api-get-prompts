@@ -18,7 +18,7 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 # FIXED CONFIGURATION
-BASE_URL="https://dev.syntx-system.com"
+BASE_URL="https://dev.syntx-system.com/api/strom"
 TIMEOUT=15
 TOTAL_TESTS=0
 PASSED_TESTS=0
@@ -65,6 +65,79 @@ print_response_preview() {
 }
 
 test_endpoint() {
+test_endpoint() {
+    local method="$1"
+    local path="$2"
+    local description="$3"
+    local data="$4"
+    
+    TOTAL_TESTS=$((TOTAL_TESTS + 1))
+    
+    local url="${BASE_URL}${path}"
+    local start_time=$(date +%s%3N)
+    
+    # Execute request
+    if [ "$method" == "GET" ]; then
+        HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time $TIMEOUT "$url" 2>/dev/null)
+    elif [ "$method" == "PUT" ] && [ -n "$data" ]; then
+        HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time $TIMEOUT -X PUT -H "Content-Type: application/json" -d "$data" "$url" 2>/dev/null)
+    elif [ "$method" == "POST" ] && [ -n "$data" ]; then
+        HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time $TIMEOUT -X POST -H "Content-Type: application/json" -d "$data" "$url" 2>/dev/null)
+    elif [ "$method" == "POST" ]; then
+        HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time $TIMEOUT -X POST "$url" 2>/dev/null)
+    else
+        HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time $TIMEOUT -X "$method" "$url" 2>/dev/null)
+    fi
+    
+    local end_time=$(date +%s%3N)
+    local duration=$((end_time - start_time))
+    TOTAL_TIME=$((TOTAL_TIME + duration))
+    
+    # Split response and status
+    HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n 1)
+    HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+    
+    echo ""
+    
+    # Check status
+    if [[ "$HTTP_STATUS" =~ ^2 ]]; then
+        PASSED_TESTS=$((PASSED_TESTS + 1))
+        
+        echo -e "${GREEN}┌──────────────────────────────────────────────────────────────────────────┐${NC}"
+        echo -e "${GREEN}│${NC} ${WHITE}✅ ${method} ${path}${NC}"
+        echo -e "${GREEN}│${NC} ${GRAY}${description}${NC}"
+        echo -e "${GREEN}├──────────────────────────────────────────────────────────────────────────┤${NC}"
+        echo -e "${GREEN}│${NC} Status: ${GREEN}${HTTP_STATUS} OK${NC}  |  Time: ${CYAN}${duration}ms${NC}  |  Size: ${BLUE}$(echo "$HTTP_BODY" | wc -c) bytes${NC}"
+        echo -e "${GREEN}├──────────────────────────────────────────────────────────────────────────┤${NC}"
+        
+        # Show keys
+        local keys=$(echo "$HTTP_BODY" | jq -r 'keys | join(", ")' 2>/dev/null)
+        if [ -n "$keys" ] && [ "$keys" != "null" ]; then
+            echo -e "${GREEN}│${NC} ${YELLOW}Keys:${NC} ${keys}"
+            echo -e "${GREEN}├──────────────────────────────────────────────────────────────────────────┤${NC}"
+        fi
+        
+        # Show response preview
+        echo -e "${GREEN}│${NC} ${YELLOW}Response:${NC}"
+        print_response_preview "$HTTP_BODY" 12
+        echo -e "${GREEN}└──────────────────────────────────────────────────────────────────────────┘${NC}"
+        
+    else
+        FAILED_TESTS=$((FAILED_TESTS + 1))
+        
+        echo -e "${RED}┌──────────────────────────────────────────────────────────────────────────┐${NC}"
+        echo -e "${RED}│${NC} ${WHITE}❌ ${method} ${path}${NC}"
+        echo -e "${RED}│${NC} ${GRAY}${description}${NC}"
+        echo -e "${RED}├──────────────────────────────────────────────────────────────────────────┤${NC}"
+        echo -e "${RED}│${NC} Status: ${RED}${HTTP_STATUS} FAILED${NC}  |  Time: ${duration}ms"
+        echo -e "${RED}├──────────────────────────────────────────────────────────────────────────┤${NC}"
+        
+        # Show error
+        local error_msg=$(echo "$HTTP_BODY" | jq -r '.detail // .message // .error // "Unknown error"' 2>/dev/null)
+        echo -e "${RED}│${NC} ${RED}Error:${NC} ${error_msg}"
+        echo -e "${RED}└──────────────────────────────────────────────────────────────────────────┘${NC}"
+    fi
+}
     local method="$1"
     local path="$2"
     local description="$3"
@@ -171,8 +244,7 @@ echo -e "${WHITE}═════════════════════
 print_header "🏥 HEALTH & SYSTEM (3 Endpoints)"
 
 test_endpoint "GET" "/health" "Root Health Check - API Version & Module Status"
-test_endpoint "GET" "/strom/health" "Strom Health - Stream Service Status"
-test_endpoint "GET" "/strom/queue/status" "Queue Status Detail - Processing Info"
+test_endpoint "GET" "/health" "Strom Health - Stream Service Status"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # FORMATS API (NEU!)
@@ -244,6 +316,31 @@ print_header "👁️ MONITORING (1 Endpoint)"
 test_endpoint "GET" "/monitoring/live-queue" "Live Queue Monitor - Real-time Processing Status"
 
 # ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TOPIC WEIGHTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+print_header "⚖️ TOPIC WEIGHTS - Persistent Priority Management (4 Endpoints)"
+
+test_endpoint "GET" "/topic-weights" "Get All Topic Weights - Bulk Retrieval"
+test_endpoint "PUT" "/topic-weights" "Set All Topic Weights - Bulk Update" '{"weights":{"Quantencomputer":0.9,"KI":0.85}}'
+test_endpoint "GET" "/topic-weights/Quantencomputer" "Get Single Topic Weight - Individual Retrieval"
+test_endpoint "PUT" "/topic-weights/KI" "Set Single Topic Weight - Individual Update" '{"weight":0.92}'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# KRONTUN - Cron Orchestration
+# ═══════════════════════════════════════════════════════════════════════════
+
+print_header "🌀 KRONTUN - Advanced Cron Orchestration & Analytics (6 Endpoints)"
+
+test_endpoint "GET" "/kalibrierung/cron/stats" "Live Cron Stats - Real-time Status Dashboard"
+test_endpoint "GET" "/kalibrierung/cron/logs?limit=5" "Cron Execution Logs - History with Limit"
+test_endpoint "GET" "/kalibrierung/cron/impact" "Cron Impact Analytics - Topics x Time Heatmap"
+test_endpoint "GET" "/kalibrierung/cron/test-morning-batch" "Get Cron Details - Individual Cron Info"
+test_endpoint "PUT" "/kalibrierung/cron/test-cron-update" "Update Cron Config - Modify Zeit/Felder" '{"zeit":"06:00","felder":{"KI":0.9}}'
+test_endpoint "POST" "/kalibrierung/cron/test-cron-trigger/run" "Manual Cron Trigger - Force Execution"
+
 # SUMMARY
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -259,7 +356,7 @@ echo -e "${PURPLE}║${NC}                                                      
 PASS_RATE=$(echo "scale=1; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
 AVG_TIME=$(echo "scale=0; $TOTAL_TIME / $TOTAL_TESTS" | bc)
 
-printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Total Tests:" "$TOTAL_TESTS"
+printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Total Tests:" "$TOTAL_TESTS (incl. 10 new KRONTUN/Weights)"
 printf "${PURPLE}║${NC}   ${GREEN}%-20s${NC} ${GREEN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Passed:" "$PASSED_TESTS"
 printf "${PURPLE}║${NC}   ${RED}%-20s${NC} ${RED}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Failed:" "$FAILED_TESTS"
 printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Pass Rate:" "${PASS_RATE}%"
@@ -288,13 +385,15 @@ echo -e "${PURPLE}║${NC}                                                      
 echo -e "${PURPLE}╠═════════════════════════════════════════════════════════════════════════════╣${NC}"
 echo -e "${PURPLE}║${NC}                                                                             ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${WHITE}Endpoint Categories:${NC}                                                     ${PURPLE}║${NC}"
-echo -e "${PURPLE}║${NC}   ${GRAY}• Health & System:     3 endpoints${NC}                                       ${PURPLE}║${NC}"
+echo -e "${PURPLE}║${NC}   ${GRAY}• Health & System:     2 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Formats API:         9 endpoints (Dynamic Format Registry)${NC}             ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Analytics:           7 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Evolution & Compare: 2 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Feld & Strom:        4 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Prompts:             4 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Monitoring:          1 endpoint${NC}                                        ${PURPLE}║${NC}"
+echo -e "${PURPLE}║${NC}   ${GRAY}• Topic Weights:       4 endpoints (Persistent Priority Control)${NC}        ${PURPLE}║${NC}"
+echo -e "${PURPLE}║${NC}   ${GRAY}• KRONTUN:             6 endpoints (Cron Orchestration & Analytics)${NC}     ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}                                                                             ${PURPLE}║${NC}"
 echo -e "${PURPLE}╚═════════════════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
