@@ -1,414 +1,156 @@
-# 🌊 SYNTX STROM-ORCHESTRATOR API
+# 🌊 SYNTX STROM-ORCHESTRATOR API - NEUKÖLLN EDITION
 
-**Yo, pass auf Bruder!** 💎⚡ **JETZT KOMMT DIE ULTIMATIVE DOKU! NEUKÖLLN STYLE!** 🔥🌊
+**Yo, pass auf Bruder!** 💎⚡ **JETZT KOMMT DIE ULTIMATIVE DOKU! NEUKÖLLNER STRASSENSLANG TRIFFT SYNTX-TERMINOLOGIE!** 🔥🌊
 
 Dies ist nicht irgendeine API. Dies ist der **STROM-ORCHESTRATOR** – das Herzstück für die Kalibrierung und Steuerung des kompletten SYNTX Prompt-Generation-Systems.
 
 **Was du hier findest:**
-- **17 Endpoints** für komplette CRUD-Kontrolle (13 alte + **4 NEUE TOPIC WEIGHTS**)
-- SYNTX-Terminologie durchgehend (keine Mainstream-Scheiße)
-- Feld-basierte Architektur (nicht Token-Müll)
-- Pure Linux-Stack (keine Docker-Overhead)
-- **PERSISTENT TOPIC WEIGHTS** (Speichert deine Priorities für immer)
+- **🔥 KRONTUN** - 3 Endpoints für Real Calibration Data (1288 echte Production Runs!)
+- **⚖️ TOPIC WEIGHTS** - 4 Endpoints für persistente Priority Control
+- **💎 FELD-BASIERTE ARCHITEKTUR** - Keine Token-Scheiße, nur Ströme und Resonanz
+- **🌊 PURE LINUX STACK** - Kein Docker-Overhead, nur raw systemd power
+- **👑 SYNTX-TERMINOLOGIE** durchgehend - Drift, Kohärenz, Resonanz, Felder
 
 **Kein Blabla. Nur Felder. Nur Ströme. Nur Resonanz.**
 
 ---
 
-## 📍 WO LÄUFT DAS DING?
+## 📍 WO LÄUFT DER SCHEISS?
 
 **Lokal (Dev):**
 - `http://127.0.0.1:8020`
 - FastAPI Auto-Docs: `http://127.0.0.1:8020/docs`
 
-**Production:**
+**Production (Live Alter!):**
 - `https://dev.syntx-system.com/api/strom/`
 - Nginx Proxy → Port 8020
 - SSL via Let's Encrypt
+- **100% PASS RATE** auf allen 36 Endpoints
 
 **Service Management:**
 ```bash
 # Status checken
-sudo systemctl status syntx-strom-api.service
+sudo systemctl status syntx-api.service
 
-# Neustarten
-sudo systemctl restart syntx-strom-api.service
+# Neustarten (wenn du Scheiße gebaut hast)
+sudo systemctl restart syntx-api.service
 
-# Logs live
-sudo journalctl -u syntx-strom-api.service -f
+# Logs live (see the magic happen)
+sudo journalctl -u syntx-api.service -f
 ```
 
 ---
 
-## 🗂️ FILE STRUKTUR
+## 🗂️ FILE STRUKTUR - WO IST WAS BRUDER?
 ```
 /opt/syntx-workflow-api-get-prompts/
 ├── api-core/
-│   └── generation/
-│       ├── generation_api.py          # Main API (17 Endpoints)
-│       ├── topic_weights_handler.py   # 🆕 Topic Weights Persistenz
-│       ├── generator_health.py        # Health Check Logic
-│       ├── generator_monitoring.py    # Monitoring & Stats
-│       ├── README.md                  # Diese Datei hier Alter
-│       ├── FRONTEND_INTEGRATION.md    # TypeScript Client Guide
-│       └── COMPONENT_SPECS.md         # UI Component Specs
+│   ├── generation/
+│   │   ├── generation_api.py          # Topic Weights (4 Endpoints)
+│   │   ├── topic_weights_handler.py   # Persistent Storage Logic
+│   │   └── README.md                  # Diese geile Datei hier! 🔥
+│   ├── kalibrierung_router.py         # 🆕 KRONTUN (3 Endpoints)
+│   ├── syntx_api_production_v2.py     # Main API (36 Endpoints Total)
+│   └── [analytics, formats, prompts, monitoring...]
 ├── configs/
-│   └── generator.yaml                 # Runtime Config (Topics, Styles, OpenAI)
-└── /opt/syntx-config/configs/
-    └── topic_weights.json             # 🆕 Persistent Topic Weights Storage
+│   └── generator.yaml                 # Runtime Config
+└── /opt/syntx-config/
+    ├── configs/
+    │   └── topic_weights.json         # Persistent Topic Weights
+    └── generator-data/
+        └── syntex_calibrations.jsonl  # 🔥 1288 ECHTE CALIBRATIONS!
 ```
 
 ---
 
-## 🎯 ALLE 17 ENDPOINTS
+## 🎯 ALLE ENDPOINTS - KOMPLETTER ÜBERBLICK
 
-### **BLOCK 1: SYSTEM STATUS** (1 Endpoint)
+### **🌀 KRONTUN - REAL CALIBRATION DATA** (3 Endpoints)
 
-#### `GET /strom/status`
-**Was:** System Health Check + Verfügbare Felder Counter
+**Das ist der neue Shit Bruder!** Real Production Data aus `syntex_calibrations.jsonl` - 1288 echte Calibration Runs mit Quality Scores, Drift, Duration, alles!
 
-**Response:**
-```json
-{
-  "status": "STROM_SYSTEM_AKTIV",
-  "felder_verfuegbar": {
-    "topics": 34,
-    "kategorien": 7,
-    "styles": 4
-  },
-  "model": "gpt-4o",
-  "max_stroeme_pro_anfrage": 100
-}
-```
-
-**Use Case:** Check ob System läuft + wieviele Felder verfügbar sind.
-
----
-
-### **BLOCK 2: FELDER MANAGEMENT** (1 Endpoint)
-
-#### `GET /felder/verfuegbar`
-**Was:** Komplette Liste aller Felder (Topics gruppiert + Styles)
-
-**Response:**
-```json
-{
-  "topics": 34,
-  "kategorien": ["technologie", "gesellschaft", "grenzwertig", ...],
-  "kategorien_details": {
-    "technologie": 10,
-    "gesellschaft": 8,
-    ...
-  },
-  "styles": ["technisch", "kreativ", "akademisch", "casual"]
-}
-```
-
-**Use Case:** Init für Frontend - zeigt was verfügbar ist.
-
----
-
-### **BLOCK 3: KALIBRIERUNG - TOPICS** (2 Endpoints)
-
-#### `GET /kalibrierung/topics`
-**Was:** Alle Topics pro Kategorie holen
-
-**Response:**
-```json
-{
-  "topics": {
-    "technologie": ["Quantencomputer", "Künstliche Intelligenz", "Blockchain 2.0", ...],
-    "gesellschaft": ["Migration und Integration", "Klimawandel", ...],
-    "grenzwertig": ["Verschwörungstheorien analysieren", ...]
-  },
-  "anzahl": 34
-}
-```
-
-**Use Case:** Zeige User welche Topics in welcher Kategorie sind.
-
----
-
-#### `PUT /kalibrierung/topics`
-**Was:** Topics hinzufügen/entfernen/komplett neu setzen
-
-**Request:**
-```json
-{
-  "kategorie": "technologie",
-  "topics": ["Neues Topic 1", "Neues Topic 2"],
-  "aktion": "add"  // oder "remove" oder "set"
-}
-```
-
-**Aktionen:**
-- `add`: Fügt Topics zur Kategorie hinzu
-- `remove`: Entfernt Topics aus Kategorie
-- `set`: Überschreibt komplette Kategorie (Vorsicht!)
+#### `GET /kalibrierung/cron/stats`
+**Was:** Live Stats - wie viele Calibrations liefen, wie viele failed
 
 **Response:**
 ```json
 {
   "erfolg": true,
-  "message": "2 Topics zu technologie hinzugefügt",
-  "neue_anzahl": 12
+  "active": 0,
+  "pending": 0,
+  "completed": 1281,
+  "failed": 7,
+  "total": 1288
 }
 ```
 
-**Use Case:** User will eigene Topics hinzufügen oder unwichtige rausschmeißen.
+**Use Case:** Dashboard - zeig mir die Zahlen Alter! 99.5% Success Rate! 🔥
 
 ---
 
-### **BLOCK 4: KALIBRIERUNG - STYLES** (2 Endpoints)
-
-#### `GET /kalibrierung/styles`
-**Was:** Alle verfügbaren Styles holen
-
-**Response:**
-```json
-{
-  "styles": ["technisch", "kreativ", "akademisch", "casual"],
-  "anzahl": 4
-}
-```
-
-**Use Case:** Zeige User welche Styles verfügbar sind.
-
----
-
-#### `PUT /kalibrierung/styles`
-**Was:** Styles hinzufügen/entfernen/neu setzen
-
-**Request:**
-```json
-{
-  "styles": ["neuer_style", "noch_ein_style"],
-  "aktion": "add"  // oder "remove" oder "set"
-}
-```
+#### `GET /kalibrierung/cron/logs?limit=5`
+**Was:** Echte Calibration History mit Quality Scores und Drift
 
 **Response:**
 ```json
 {
   "erfolg": true,
-  "message": "2 Styles hinzugefügt",
-  "neue_anzahl": 6
-}
-```
-
-**Use Case:** User will eigenen Style definieren (z.B. "poetisch", "humorvoll").
-
----
-
-### **BLOCK 5: KALIBRIERUNG - OPENAI PARAMS** (2 Endpoints)
-
-#### `GET /kalibrierung/openai`
-**Was:** Aktuelle OpenAI Parameter holen
-
-**Response:**
-```json
-{
-  "model": "gpt-4o",
-  "temperature": 0.7,
-  "top_p": 1.0,
-  "max_tokens": 1297,
-  "max_refusal_retries": 3
-}
-```
-
-**Use Case:** Zeige User aktuelle Parameter (z.B. für Tuning).
-
----
-
-#### `PUT /kalibrierung/openai`
-**Was:** OpenAI Parameter ändern
-
-**Request:**
-```json
-{
-  "model": "gpt-4o",
-  "temperature": 0.9,
-  "top_p": 0.95,
-  "max_tokens": 2000,
-  "max_refusal_retries": 5
-}
-```
-
-**Response:**
-```json
-{
-  "erfolg": true,
-  "message": "OpenAI Config aktualisiert",
-  "neue_config": { ... }
-}
-```
-
-**Use Case:** User will mehr Kreativität (temperature hoch) oder Konsistenz (temperature runter).
-
----
-
-### **BLOCK 6: KALIBRIERUNG - CRON JOBS** (3 Endpoints)
-
-#### `GET /kalibrierung/cron`
-**Was:** Alle aktiven Cron Jobs holen
-
-**Response:**
-```json
-{
-  "cronjobs": [
+  "anzahl": 5,
+  "logs": [
     {
-      "name": "Daily Producer Run",
-      "rhythmus": "0 2 * * *",
-      "typ": "producer",
-      "batch_groesse": 100
+      "cron_id": "calibration-2025-12-18T10:32:56",
+      "timestamp": "2025-12-18T10:32:56.449517Z",
+      "cron_data": {
+        "name": "SYNTEX::TRUE_RAW Calibration",
+        "modell": "mistral-uncensored",
+        "anzahl": 1,
+        "felder": {
+          "Driftkorper": 1.0,
+          "Kalibrierung": 1.0,
+          "Stromung": 1.0
+        }
+      },
+      "result": {
+        "status": "completed",
+        "generated": 1,
+        "failed": 0,
+        "avg_quality": 100,
+        "drift": 0.05,
+        "cost": 0.01,
+        "duration_ms": 151734
+      }
     }
-  ],
-  "anzahl": 1
-}
-```
-
-**Use Case:** User will sehen welche Jobs geplant sind.
-
----
-
-#### `POST /kalibrierung/cron`
-**Was:** Neuen Cron Job hinzufügen
-
-**Request:**
-```json
-{
-  "name": "Morning Batch",
-  "rhythmus": "0 6 * * *",
-  "wrapper": "syntx-rap",
-  "batch_groesse": 50,
-  "typ": "producer"
-}
-```
-
-**Rhythmus Format:** Standard Cron (Minute Hour Day Month Weekday)
-- `0 2 * * *` = Jeden Tag um 2 Uhr
-- `*/30 * * * *` = Alle 30 Minuten
-
-**Response:**
-```json
-{
-  "erfolg": true,
-  "message": "Cron Job 'Morning Batch' hinzugefügt"
-}
-```
-
-**Use Case:** User will automatisches Batch Processing einrichten.
-
----
-
-#### `DELETE /kalibrierung/cron/{pattern}`
-**Was:** Cron Job löschen
-
-**Request:**
-```bash
-curl -X DELETE https://dev.syntx-system.com/api/strom/kalibrierung/cron/0%202%20*%20*%20*
-```
-
-**Response:**
-```json
-{
-  "erfolg": true,
-  "message": "Cron Job '0 2 * * *' gelöscht"
-}
-```
-
-**Use Case:** User will Job stoppen.
-
----
-
-### **BLOCK 7: RESONANZ PARAMETER** (1 Endpoint)
-
-#### `GET /resonanz/parameter`
-**Was:** Kompletter System-Überblick (All-in-One Status)
-
-**Response:**
-```json
-{
-  "topics": {
-    "technologie": [...],
-    "gesellschaft": [...]
-  },
-  "styles": ["technisch", "kreativ", "akademisch", "casual"],
-  "openai_config": {
-    "model": "gpt-4o",
-    "temperature": 0.7,
-    ...
-  },
-  "cronjobs": [...],
-  "system_status": {
-    "aktiv": true,
-    "felder_verfuegbar": { ... }
-  }
-}
-```
-
-**Use Case:** Frontend Init - holt ALLES auf einmal (statt 5 einzelne Requests).
-
----
-
-### **BLOCK 8: STROM DISPATCH** (1 Endpoint)
-
-#### `POST /strom/dispatch`
-**Was:** Prompts generieren (das eigentliche Herzstück Alter!)
-
-**Request:**
-```json
-{
-  "felder_topics": {
-    "Quantencomputer": 0.8,
-    "Künstliche Intelligenz": 0.9,
-    "Kochen und Rezepte": 0.2
-  },
-  "felder_styles": {
-    "technisch": 0.7,
-    "kreativ": 0.5
-  },
-  "strom_anzahl": 10,
-  "sprache": "de"
-}
-```
-
-**Felder Gewichtungen:**
-- `0.0 - 1.0` = Wahrscheinlichkeit dass Topic/Style gewählt wird
-- `0.8` = 80% Chance
-- `0.2` = 20% Chance
-
-**Response:**
-```json
-{
-  "erfolg": true,
-  "erzeugt": 8,
-  "fehler": 2,
-  "kosten_gesamt": 0.0234,
-  "dauer_ms": 12450,
-  "stroeme": [
-    {
-      "erfolg": true,
-      "topic": "Quantencomputer",
-      "style": "technisch",
-      "sprache": "de",
-      "strom_text": "Erkläre die Funktionsweise von Quantencomputern...",
-      "qualitaet": 95,
-      "kosten": 0.0023,
-      "dauer_ms": 1200
-    },
-    ...
   ]
 }
 ```
 
-**Use Case:** DAS HIER IST DER MONEY SHOT! Generiert die eigentlichen Prompts.
+**SYNTX Felder Explained:**
+- **Driftkorper** - WAS wird analysiert (Substanz, Struktur, Kern)
+- **Kalibrierung** - WIE wird optimiert (Präzision, Resonanz)
+- **Stromung** - WIE fließt es (Bewegung, Energie, Richtung)
+
+**Use Case:** Timeline - zeig mir die letzten Runs, was lief gut, was failed?
 
 ---
 
-### **BLOCK 9: 🆕 TOPIC WEIGHTS** (4 Endpoints)
+#### `GET /kalibrierung/cron/impact`
+**Was:** Impact Analytics - Topics x Time Heatmap (Placeholder für jetzt)
 
-**NEU! Persistent Topic Gewichtungen speichern!**
+**Response:**
+```json
+{
+  "erfolg": true,
+  "impact": []
+}
+```
+
+**Use Case:** Future - zeige welche Topics wann am meisten processed wurden.
+
+---
+
+### **⚖️ TOPIC WEIGHTS - PERSISTENT PRIORITY CONTROL** (4 Endpoints)
+
+**Persistent Topic Gewichtungen!** Speichert in `/opt/syntx-config/configs/topic_weights.json` - überlebt Server-Restart, keine Session-Scheiße!
 
 #### `GET /topic-weights`
 **Was:** Alle gespeicherten Topic-Gewichtungen holen
@@ -419,19 +161,19 @@ curl -X DELETE https://dev.syntx-system.com/api/strom/kalibrierung/cron/0%202%20
   "erfolg": true,
   "weights": {
     "Quantencomputer": 0.85,
-    "Künstliche Intelligenz": 0.92,
-    "Kochen und Rezepte": 0.20
+    "KI": 0.92,
+    "Blockchain": 0.65
   },
   "anzahl": 3
 }
 ```
 
-**Use Case:** Frontend lädt beim Start die gespeicherten Gewichtungen.
+**Use Case:** Frontend lädt beim Start die gespeicherten Gewichtungen - User sieht sofort seine Priorities!
 
 ---
 
 #### `PUT /topic-weights`
-**Was:** ALLE Topic-Gewichtungen auf einmal speichern
+**Was:** ALLE Topic-Gewichtungen auf einmal speichern (Bulk Update Bruder!)
 
 **Request:**
 ```json
@@ -439,32 +181,33 @@ curl -X DELETE https://dev.syntx-system.com/api/strom/kalibrierung/cron/0%202%20
   "weights": {
     "Quantencomputer": 0.85,
     "Künstliche Intelligenz": 0.92,
-    "Blockchain 2.0": 0.65
+    "Blockchain 2.0": 0.65,
+    "Kochen und Rezepte": 0.20
   }
 }
 ```
 
 **Validation:**
-- Weight muss 0.0 - 1.0 sein
-- Weights außerhalb Range → Error
+- Weight muss `0.0 - 1.0` sein (sonst gibts Error Alter!)
+- Weights außerhalb Range → 400 Bad Request
 
 **Response:**
 ```json
 {
   "erfolg": true,
-  "gespeichert": 3,
-  "message": "✅ 3 Topic-Gewichtungen gespeichert"
+  "gespeichert": 4,
+  "message": "✅ 4 Topic-Gewichtungen gespeichert"
 }
 ```
 
-**Use Case:** User hat Bubbles im Frontend verschoben, alle Weights auf einmal speichern.
+**Use Case:** User hat Bubbles im Frontend verschoben, alle Weights auf einmal speichern - ATOMIC!
 
 ---
 
 #### `GET /topic-weights/{topic_name}`
 **Was:** Gewichtung für EIN einzelnes Topic holen
 
-**Request:**
+**Example:**
 ```bash
 curl https://dev.syntx-system.com/api/strom/topic-weights/Quantencomputer
 ```
@@ -478,12 +221,12 @@ curl https://dev.syntx-system.com/api/strom/topic-weights/Quantencomputer
 }
 ```
 
-**Use Case:** Check Gewichtung für spezifisches Topic.
+**Use Case:** Check Weight für spezifisches Topic - "Wie wichtig ist mir Quantencomputer gerade?"
 
 ---
 
 #### `PUT /topic-weights/{topic_name}`
-**Was:** Gewichtung für EIN Topic updaten
+**Was:** Gewichtung für EIN Topic updaten (Single Update Bruder!)
 
 **Request:**
 ```bash
@@ -502,13 +245,57 @@ curl -X PUT https://dev.syntx-system.com/api/strom/topic-weights/Quantencomputer
 }
 ```
 
-**Use Case:** User clickt auf eine Bubble → Weight +10%.
+**Use Case:** User clickt auf eine Bubble → Weight +10% - sofort gespeichert!
 
 ---
 
 ## 🗄️ STORAGE - WO LANDET DER SCHEISS?
 
-### Topic Weights Storage
+### 🔥 Calibration Data (Read-Only)
+
+**File:** `/opt/syntx-config/generator-data/syntex_calibrations.jsonl`
+
+**1288 Zeilen echter Production Data!**
+```json
+{
+  "timestamp": "2025-11-28T10:20:52.865314Z",
+  "system": "SYNTEX::TRUE_RAW",
+  "meta_prompt": "Erstelle eine Vision für...",
+  "success": true,
+  "duration_ms": 59451,
+  "quality_score": {
+    "total_score": 98,
+    "field_completeness": 100,
+    "structure_adherence": 96,
+    "detail_breakdown": {
+      "drift": true,
+      "hintergrund_muster": true,
+      "druckfaktoren": true,
+      "tiefe": true,
+      "wirkung": true,
+      "klartext": true
+    }
+  },
+  "parsed_fields": {
+    "drift": "...",
+    "hintergrund_muster": "...",
+    "druckfaktoren": "...",
+    "tiefe": "...",
+    "wirkung": "...",
+    "klartext": "..."
+  }
+}
+```
+
+**Eigenschaften:**
+- **Read-Only:** API liest nur, schreibt nicht
+- **1288 Calibrations:** Echte Production Runs
+- **99.5% Success Rate:** 1281 completed, 7 failed
+- **SYNTX Fields:** drift, hintergrund_muster, druckfaktoren, tiefe, wirkung, klartext
+
+---
+
+### ⚖️ Topic Weights Storage (Read-Write)
 
 **File:** `/opt/syntx-config/configs/topic_weights.json`
 ```json
@@ -525,241 +312,406 @@ curl -X PUT https://dev.syntx-system.com/api/strom/topic-weights/Quantencomputer
 
 **Eigenschaften:**
 - **Persistent:** Überlebt Server-Restart
-- **Atomic Writes:** Keine Race Conditions
+- **Atomic Writes:** Keine Race Conditions (file lock baby!)
 - **Default Weight:** 0.5 für neue Topics
-- **Validation:** 0.0 - 1.0 Range enforced
-
-### Runtime Config
-
-**File:** `/opt/syntx-config/configs/generator.yaml`
-```yaml
-topics:
-  technologie:
-    - Quantencomputer
-    - Künstliche Intelligenz
-  gesellschaft:
-    - Migration und Integration
-    - Klimawandel
-
-styles:
-  - technisch
-  - kreativ
-  - akademisch
-  - casual
-
-openai:
-  model: gpt-4o
-  temperature: 0.7
-  top_p: 1.0
-  max_tokens: 1297
-  max_refusal_retries: 3
-```
+- **Validation:** 0.0 - 1.0 Range enforced (sonst gibts Error!)
 
 ---
 
-## 🎬 USE CASE FLOWS
+## 🎬 USE CASE FLOWS - SO NUTZT DU DEN SCHEISS!
 
-### Flow 1: Topic Gewichtung setzen + Prompts generieren
+### Flow 1: Topic Weights setzen → Frontend zeigt gespeicherte Priorities
 ```bash
-# 1. Topics laden
-curl https://dev.syntx-system.com/api/strom/kalibrierung/topics
+# 1. Alle Weights holen (Frontend Init)
+curl https://dev.syntx-system.com/api/strom/topic-weights
 
-# 2. Gewichtungen setzen
+# 2. User verschiebt Bubbles im Frontend
+# Frontend sendet: Alle neuen Weights auf einmal
+
 curl -X PUT https://dev.syntx-system.com/api/strom/topic-weights \
   -H "Content-Type: application/json" \
   -d '{
     "weights": {
       "Quantencomputer": 0.9,
       "Künstliche Intelligenz": 0.8,
-      "Kochen und Rezepte": 0.1
+      "Blockchain 2.0": 0.3
     }
   }'
 
-# 3. Prompts generieren (nutzt die Gewichtungen)
-curl -X POST https://dev.syntx-system.com/api/strom/strom/dispatch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "felder_topics": {
-      "Quantencomputer": 0.9,
-      "Künstliche Intelligenz": 0.8
-    },
-    "felder_styles": {
-      "technisch": 0.7
-    },
-    "strom_anzahl": 5,
-    "sprache": "de"
-  }'
+# 3. Server speichert persistent
+# 4. User refresht Browser → Bubbles bleiben wo sie waren! 🔥
 ```
 
-**Resultat:** System generiert mehr Prompts über Quantencomputer (90% Chance) als über Kochen (10% Chance).
+**Resultat:** Keine Session-Scheiße mehr! Weights überleben Browser Refresh, Server Restart, alles!
 
 ---
 
-### Flow 2: Cron Job für tägliches Batch Processing
+### Flow 2: KRONTUN Dashboard - Real Production Stats
 ```bash
-# 1. Cron Job erstellen
-curl -X POST https://dev.syntx-system.com/api/strom/kalibrierung/cron \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Daily Morning Batch",
-    "rhythmus": "0 6 * * *",
-    "batch_groesse": 100,
-    "typ": "producer"
-  }'
+# 1. Stats laden
+curl https://dev.syntx-system.com/api/strom/kalibrierung/cron/stats
 
-# 2. Check ob Job läuft
-curl https://dev.syntx-system.com/api/strom/kalibrierung/cron
+# Response: 1281 completed, 7 failed, 1288 total
+# Frontend zeigt: 99.5% Success Rate!
 
-# 3. Job läuft jeden Morgen um 6 Uhr automatisch
-# Nutzt gespeicherte Topic Weights für Prompt Generation
+# 2. Recent Executions laden
+curl https://dev.syntx-system.com/api/strom/kalibrierung/cron/logs?limit=10
+
+# Response: Letzte 10 Calibrations mit Quality Scores, Drift, Duration
+
+# 3. User clickt auf Calibration → Modal öffnet
+# Frontend zeigt:
+# - Quality Score: 100
+# - Drift: 0.05 (5%)
+# - Duration: 151s
+# - Fields: Driftkorper, Kalibrierung, Stromung
+# - Status: completed ✅
 ```
 
-**Resultat:** Jeden Tag um 6 Uhr werden automatisch 100 Prompts generiert, basierend auf den gespeicherten Gewichtungen.
+**Resultat:** Live Dashboard mit echten Production Daten! Keine Mocks! Nur echte Ströme! 🌊
 
 ---
 
-## 🔧 TECH STACK
+### Flow 3: Single Topic Weight updaten
+```bash
+# User clickt auf "Quantencomputer" Bubble
+# Frontend sendet: +10% Weight
+
+curl -X PUT https://dev.syntx-system.com/api/strom/topic-weights/Quantencomputer \
+  -H "Content-Type: application/json" \
+  -d '{"weight": 0.95}'
+
+# Server speichert sofort
+# Response: "✅ Gewichtung für Quantencomputer auf 0.95 gesetzt"
+# Frontend updated Bubble Position live!
+```
+
+**Resultat:** Instant Update, keine Verzögerung, sofort persistent!
+
+---
+
+## 🔧 TECH STACK - WOMIT LÄUFT DER SCHEISS?
 
 **Backend:**
-- Python 3.10+
-- FastAPI
-- Pydantic (Validation)
-- PyYAML (Config Loading)
-- JSON (Topic Weights Storage)
+- Python 3.12
+- FastAPI (für die Endpoints Bruder!)
+- Pydantic (Validation - keine Bad Requests!)
+- JSON (Topic Weights Storage - simpel, robust)
 
 **Infrastructure:**
-- Systemd (Service Management)
-- Nginx (Reverse Proxy)
-- Let's Encrypt (SSL)
+- Systemd (Service Management - kein Docker-Overhead!)
+- Nginx (Reverse Proxy - SSL Termination)
+- Let's Encrypt (SSL - Gratis aber geil!)
 
 **File System:**
 - `/opt/syntx-workflow-api-get-prompts/` - Code
-- `/opt/syntx-config/configs/` - Config + Persistent Storage
+- `/opt/syntx-config/` - Config + Data
 
 ---
 
-## 🐛 TROUBLESHOOTING
+## 🐛 TROUBLESHOOTING - WENN SCHEISSE PASSIERT
 
 ### Problem: "Weights werden nicht gespeichert"
 
-**Check:**
+**Check das Bruder:**
 ```bash
-# Backend läuft?
-sudo systemctl status syntx-strom-api.service
+# 1. Service läuft?
+sudo systemctl status syntx-api.service
 
-# File writable?
+# 2. File writable?
 ls -la /opt/syntx-config/configs/topic_weights.json
 
-# Permissions OK?
+# 3. Permissions OK?
 sudo chown syntx-api:syntx-api /opt/syntx-config/configs/topic_weights.json
+
+# 4. Logs checken
+sudo journalctl -u syntx-api.service -f
 ```
+
+**Solution:** Fix Permissions oder restart Service!
 
 ---
 
 ### Problem: "API gibt 404"
 
-**Check:**
+**Check das Bruder:**
 ```bash
-# Nginx Config OK?
+# 1. Nginx Config OK?
 sudo nginx -t
 
-# Proxy richtig konfiguriert?
-curl http://127.0.0.1:8020/strom/status  # Direct
-curl https://dev.syntx-system.com/api/strom/strom/status  # Via Nginx
+# 2. Direct API call OK?
+curl http://127.0.0.1:8020/kalibrierung/cron/stats
+
+# 3. Via Nginx OK?
+curl https://dev.syntx-system.com/api/strom/kalibrierung/cron/stats
+
+# 4. Endpoint richtig?
+# Richtig: /kalibrierung/cron/stats
+# Falsch:  /calibration/cron/stats  (keine englische Scheiße!)
 ```
+
+**Solution:** Check Nginx Proxy Config oder restart Service!
 
 ---
 
-### Problem: "Cron Jobs laufen nicht"
+### Problem: "Calibration Data nicht aktuell"
 
-**Check:**
+**Check das Bruder:**
 ```bash
-# Crontab gesetzt?
-crontab -l
+# 1. File existiert?
+ls -la /opt/syntx-config/generator-data/syntex_calibrations.jsonl
 
-# Logs checken
-sudo journalctl -u syntx-strom-api.service -f
+# 2. Wie viele Zeilen?
+wc -l /opt/syntx-config/generator-data/syntex_calibrations.jsonl
+
+# 3. Neueste Timestamp?
+tail -1 /opt/syntx-config/generator-data/syntex_calibrations.jsonl | jq '.timestamp'
+
+# 4. API liest richtig?
+curl https://dev.syntx-system.com/api/strom/kalibrierung/cron/logs?limit=1 | jq '.logs[0].timestamp'
 ```
+
+**Solution:** File ist read-only für API - wird von anderem Service geschrieben!
 
 ---
 
-## 💎 DEVELOPMENT WORKFLOW
+## 💎 SYNTX TERMINOLOGIE - LERN DEN SCHEISS!
 
-### 1. Änderungen machen
+### 🌊 **STROM**
+**Was:** Nicht "Daten", nicht "Requests" - **STROM** ist der Fluss der Felder durch das System.
+
+**Beispiel:**
+- Token-Denken: "Ich schicke einen Request zur API"
+- Feld-Denken: "Ich initiiere einen STROM durch die Resonanzfelder"
+
+---
+
+### 💎 **FELD**
+**Was:** Nicht "Kategorie", nicht "Tag" - **FELD** ist ein semantischer Resonanzraum.
+
+**Beispiel:**
+- Topics sind Felder: "Quantencomputer", "KI", "Blockchain"
+- Nicht "Themen" - FELDER! Weil sie resonieren!
+
+---
+
+### ⚡ **KOHÄRENZ**
+**Was:** Nicht "Quality", nicht "Correctness" - **KOHÄRENZ** ist die Übereinstimmung der Resonanzfelder.
+
+**Beispiel:**
+- Quality Score 100 = Maximale Kohärenz
+- Quality Score 50 = Drift (Feld-Verlust)
+- Quality Score 0 = Komplette Dekohärenz (Failed)
+
+---
+
+### 🔥 **DRIFT**
+**Was:** Nicht "Error", nicht "Bug" - **DRIFT** ist Feld-Verlust, Resonanz-Abweichung.
+
+**Beispiel:**
+- Drift 0.05 (5%) = Minimaler Feld-Verlust
+- Drift 0.40 (40%) = Hoher Feld-Verlust
+- Drift > 0.20 = Warning Territory!
+
+---
+
+### 🌊 **KALIBRIERUNG**
+**Was:** Nicht "Training", nicht "Optimization" - **KALIBRIERUNG** ist Resonanz-Justierung.
+
+**Beispiel:**
+- 1288 Calibrations = 1288 Resonanz-Justierungen
+- Jede Calibration optimiert die Feld-Parameter
+- Nicht "Training Runs" - KALIBRIERUNGEN!
+
+---
+
+### 👑 **RESONANZ**
+**Was:** Nicht "Response", nicht "Output" - **RESONANZ** ist die Antwort des Feldes.
+
+**Beispiel:**
+- Token-Denken: "Das Modell gibt eine Response zurück"
+- Feld-Denken: "Das Feld erzeugt eine RESONANZ"
+
+---
+
+## 🔥 SYNTX PHILOSOPHIE - WARUM DER SCHEISS WICHTIG IST
+
+**Das ist nicht "noch eine API". Das ist Feld-Steuerung.**
+
+### Alt (Token-Denken):
+```
+User → Schickt Request
+API → Processed Request
+System → Generiert Token
+User → Bekommt Response
+User → Vergisst alles
+User → Nächstes Mal wieder von vorne
+```
+
+**Problem:** Keine Persistenz, keine Prioritäten, keine Resonanz!
+
+---
+
+### Neu (Feld-Denken):
+```
+User → Kalibriert Felder (Topic Weights)
+System → Speichert Resonanz-Parameter (persistent!)
+User → Initiiert Strom
+System → Weiß automatisch: Welche Felder stark resonieren
+System → Generiert Kohärente Ströme
+User → Nie wieder manuelle Kalibrierung
+User → System kennt seine Priorities!
+```
+
+**Lösung:** Persistente Resonanz, automatische Kohärenz, lückenloser Strom!
+
+---
+
+## 📊 CURRENT STATUS - WO STEHEN WIR?
+
+**Live System:**
+- ✅ **7 Endpoints aktiv** (3 KRONTUN + 4 Topic Weights)
+- ✅ **1288 echte Calibrations** aus Production
+- ✅ **99.5% Success Rate** (1281 completed, 7 failed)
+- ✅ **Persistent Weights** überleben Server-Restart
+- ✅ **API Latency ~78ms** (Avg Response Time)
+- ✅ **SSL aktiv** (Let's Encrypt)
+- ✅ **Service stabil** (Systemd managed)
+- ✅ **100% Test Pass Rate** (36/36 Endpoints)
+
+**Production Metrics:**
+- **Total API Endpoints:** 36 (across all routers)
+- **KRONTUN Endpoints:** 3 (Real Calibration Data)
+- **Topic Weights Endpoints:** 4 (Persistent Storage)
+- **Analytics Endpoints:** 7
+- **Formats Endpoints:** 9
+- **Prompts Endpoints:** 4
+- **Monitoring Endpoints:** 1
+- **Evolution Endpoints:** 2
+- **Feld & Strom Endpoints:** 4
+- **Health Endpoints:** 2
+
+---
+
+## 🎯 ROADMAP - WAS KOMMT NOCH?
+
+### Phase 1: ✅ DONE
+- KRONTUN Backend (3 Endpoints)
+- Real Calibration Data (1288 Runs)
+- Topic Weights Persistence (4 Endpoints)
+- Frontend Integration (Live Dashboard)
+
+### Phase 2: 🔥 IN PROGRESS
+- **CALIBRAX** - 3D Timeline Visualization
+  - Plot Calibrations in 3D Space
+  - X-Axis: Model/Topic
+  - Y-Axis: Quality Score
+  - Z-Axis: Time
+  - Interactive Timeline Scrubbing
+  - Click → Inspect Full Calibration Details
+
+### Phase 3: 🌊 PLANNED
+- **Cron Scheduler UI**
+  - Create/Edit/Delete Cron Jobs via Frontend
+  - Visual Cron Expression Builder
+  - Field Weight Presets per Cron
+  - Trigger Manual Runs
+  
+- **Heatmap Analytics**
+  - Topics x Time Impact Matrix
+  - Show which Topics processed when
+  - Identify Peak Processing Times
+  - Optimize Cron Schedules
+
+- **Prompt List View**
+  - Show actual generated Prompts per Calibration
+  - Filter by Quality, Topic, Style
+  - Export to Training Data
+  - Re-run Failed Calibrations
+
+---
+
+## 📝 WEITERE DOCS - MEHR INFOS?
+
+**Frontend Integration:**
+- `FRONTEND_INTEGRATION.md` - TypeScript Client + React Hooks (TODO)
+
+**Component Specs:**
+- `COMPONENT_SPECS.md` - UI Component Blueprints (TODO)
+
+**Main Repo:**
+- `/opt/syntx-workflow-api-get-prompts/` - Complete Source
+- `api-core/syntx_api_production_v2.py` - Main API (36 Endpoints)
+- `api-core/kalibrierung_router.py` - KRONTUN (3 Endpoints)
+- `api-core/generation/generation_api.py` - Topic Weights (4 Endpoints)
+
+**Test Suite:**
+- `scripts/all_api_calls.sh` - Full API Test (36 Endpoints, 100% Pass Rate)
+
+---
+
+## 💪 DEVELOPMENT WORKFLOW - SO ÄNDERST DU SCHEISSE
+
+### 1. Code ändern
 ```bash
-cd /opt/syntx-workflow-api-get-prompts/api-core/generation
-nano generation_api.py
+cd /opt/syntx-workflow-api-get-prompts/api-core
+nano kalibrierung_router.py  # oder generation/generation_api.py
 ```
 
 ### 2. Service neu starten
 ```bash
-sudo systemctl restart syntx-strom-api.service
+sudo systemctl restart syntx-api.service
 ```
 
 ### 3. Logs checken
 ```bash
-sudo journalctl -u syntx-strom-api.service -f
+sudo journalctl -u syntx-api.service -f
 ```
 
 ### 4. Testen
 ```bash
-curl https://dev.syntx-system.com/api/strom/strom/status
+# Direct call
+curl http://127.0.0.1:8020/kalibrierung/cron/stats
+
+# Via Nginx (Production)
+curl https://dev.syntx-system.com/api/strom/kalibrierung/cron/stats
+```
+
+### 5. Full Test Suite
+```bash
+cd /opt/syntx-workflow-api-get-prompts
+bash scripts/all_api_calls.sh
+```
+
+### 6. Git Commit
+```bash
+git add .
+git commit -m "🔥 Your changes here"
+git push
 ```
 
 ---
 
-## 🔥 SYNTX PHILOSOPHIE
+## 🎤 FINAL WORDS - DAS WICHTIGSTE ZUM SCHLUSS
 
-**Das ist nicht "noch eine API". Das ist Feld-Steuerung.**
+**BRUDER, DAS IST NICHT "NOCH EINE API".**
 
-**Alt (Prompt Engineering):**
-```
-User → "Generiere mir 10 Prompts über Quantencomputer"
-System → Generiert
-User → Vergisst
-User → Nächstes Mal wieder manuell
-```
+Das ist **SYNTX** - die Revolution der KI-Steuerung.
 
-**Neu (SYNTX Field Control):**
-```
-User → Setzt Quantencomputer auf 90% Weight
-System → Speichert persistent
-User → "Generiere Ströme"
-System → Weiß automatisch: 90% Quantencomputer, 10% Rest
-User → Nie wieder manuell eingeben
-```
+**Nicht mehr Token. Nicht mehr Drift. Nur Felder. Nur Ströme. Nur Resonanz.**
 
-**Das ist Resonanz. Das ist Feld-Denken. Das ist SYNTX.** 🌊⚡
+**1288 echte Calibrations beweisen: DAS FUNKTIONIERT!**
 
----
+**99.5% Success Rate beweisen: DAS IST STABIL!**
 
-## 📊 CURRENT STATUS
+**Persistente Weights beweisen: DAS IST SMART!**
 
-**Live System:**
-- ✅ 17 Endpoints aktiv
-- ✅ 34 Topics verfügbar
-- ✅ 7 Kategorien
-- ✅ 4 Styles
-- ✅ Topic Weights persistent
-- ✅ API Latency ~50ms
-- ✅ SSL aktiv
-- ✅ Service stabil
-
----
-
-## 📝 WEITERE DOCS
-
-**Frontend Integration:**
-- `FRONTEND_INTEGRATION.md` - TypeScript Client + React Hooks
-
-**Component Specs:**
-- `COMPONENT_SPECS.md` - UI Component Blueprints
-
-**Main Repo:**
-- `/opt/syntx-workflow-api-get-prompts/` - Complete Source
-
----
+**Das ist Neukölln trifft AI Research. Direkter Talk. Keine Blümchen. Nur Wahrheit.**
 
 **ALLES IST BEREIT. API LÄUFT. FELDER FLIESSEN. STRÖME RESONIEREN.** 🔥💎⚡🌊👑
 
-**BRUDER, DAS IST NEUKÖLLN TRIFFT AI RESEARCH. DIREKTER TALK. KEINE BLÜMCHEN. NUR WAHRHEIT.**
+**BRUDER, JETZT WEISST DU ALLES! GO BUILD SOME SHIT!** 🚀
+
+---
+
+**EOF - Ende der Doku - Jetzt gehts los! 💎⚡🌊🔥👑**
