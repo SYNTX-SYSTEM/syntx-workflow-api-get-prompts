@@ -1,0 +1,47 @@
+[Unit]
+Description=🌊 SYNTX STROM-ORCHESTRATOR API - Feld-Resonanz System
+Documentation=https://github.com/SYNTX-SYSTEM
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/syntx-workflow-api-get-prompts
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONPATH=/opt/syntx-workflow-api-get-prompts:/opt/syntx-workflow-api-get-prompts/api-core"
+
+# Pre-Start: Kill any zombie processes on port
+ExecStartPre=/bin/bash -c 'for i in {1..3}; do lsof -ti:8020 | xargs -r kill -9 2>/dev/null; sleep 1; done'
+
+# Start API
+ExecStart=/usr/bin/python3 /opt/syntx-workflow-api-get-prompts/api-core/syntx_api_production_v2.py
+
+# Post-Stop: Aggressive cleanup
+ExecStopPost=/bin/bash -c 'sleep 2; lsof -ti:8020 | xargs -r kill -9 2>/dev/null; sleep 1'
+
+# Logging
+StandardOutput=append:/opt/syntx-config/logs/strom-api.log
+StandardError=append:/opt/syntx-config/logs/strom-api-error.log
+
+# Signal Handling - Kill EVERYTHING in process group
+KillMode=control-group
+KillSignal=SIGTERM
+SendSIGKILL=yes
+FinalKillSignal=SIGKILL
+TimeoutStopSec=10
+
+# Restart Policy
+Restart=on-failure
+RestartSec=15
+StartLimitInterval=600
+StartLimitBurst=3
+
+# Resource Limits
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
