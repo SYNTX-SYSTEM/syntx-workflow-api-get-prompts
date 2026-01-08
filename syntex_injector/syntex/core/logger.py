@@ -10,7 +10,7 @@ class CalibrationLogger:
     """Loggt SYNTEX Kalibrierungs-Prozesse"""
     
     def __init__(self, log_file: Optional[Path] = None):
-        self.log_file = log_file or Path("logs/syntex_calibrations.jsonl")
+        self.log_file = log_file or Path("/opt/syntx-config/generator-data/syntex_calibrations.jsonl")
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
     
     def log_calibration(
