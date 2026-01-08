@@ -48,7 +48,8 @@ class EnhancedSyntexCalibrator:
         self,
         meta_prompt: str,
         verbose: bool = True,
-        show_quality: bool = True
+        show_quality: bool = True,
+        gpt_user_prompt: Optional[str] = None  # 🔥 NEU!
     ) -> Tuple[bool, Optional[str], Dict]:
         """
         Führt Enhanced SYNTEX-Kalibrierung durch.
@@ -124,7 +125,8 @@ class EnhancedSyntexCalibrator:
             "duration_ms": duration_ms,
             "retry_count": retry_count,
             "error": error,
-            "model_params": MODEL_PARAMS
+            "model_params": MODEL_PARAMS,
+            "gpt_user_prompt": gpt_user_prompt  # 🔥 NEU!
         }
         
         if quality_score:

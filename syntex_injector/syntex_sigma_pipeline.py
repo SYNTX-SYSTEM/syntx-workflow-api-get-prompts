@@ -52,7 +52,7 @@ def main():
         success, response, metadata = calibrator.calibrate(
             meta_prompt=meta_prompt,
             verbose=False,
-            show_quality=False
+            gpt_user_prompt=gpt_result.get('prompt_sent')  # 🔥 NEU!
         )
         
         if success:

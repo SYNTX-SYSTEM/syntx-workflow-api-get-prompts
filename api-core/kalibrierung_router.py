@@ -30,9 +30,10 @@ async def get_cron_logs(limit: int = Query(100, le=500)):
                             "anzahl": 1,
                             "felder": _extract_fields(data)
                         },
-                        # 🔥 NEW: VOLLTEXT STAGES
+                        # 🔥 VOLLTEXT STAGES with GPT USER PROMPT!
                         "stages": {
                             "gpt_system_prompt": data.get('system', ''),
+                            "gpt_user_prompt": data.get('gpt_user_prompt', ''),  # 🔥 NEU!
                             "gpt_output_meta_prompt": data.get('meta_prompt', ''),
                             "mistral_input": data.get('meta_prompt', ''),
                             "mistral_output": data.get('response', ''),
@@ -101,50 +102,19 @@ async def get_cron_stats():
     except Exception as e:
         return {"erfolg": False}
 
-@router.get("/cron/impact")
-async def get_cron_impact():
-    """Get topic impact from calibrations"""
-    return {
-        "erfolg": True,
-        "impact": []
-    }
-
 def _extract_fields(data: dict) -> dict:
-    """Extract field weights from calibration data"""
-    fields = {}
+    """Extract field weights from parsed_fields"""
     parsed = data.get('parsed_fields', {})
+    if not parsed:
+        return {"DRIFT": 1, "HINTERGRUND-MUSTER": 1, "DRUCKFAKTOREN": 1}
     
-    # Count which fields are present and not null
-    field_names = ['drift', 'hintergrund_muster', 'druckfaktoren', 'tiefe', 'wirkung', 'klartext']
-    for field in field_names:
-        value = parsed.get(field)
-        if value and isinstance(value, str) and len(value.strip()) > 0:
-            # Use human-readable names
-            readable_name = field.replace('_', ' ').replace('hintergrund muster', 'Hintergrund-Muster').title()
-            fields[readable_name] = 1.0
+    fields = {}
+    for key in parsed.keys():
+        fields[key] = 1
     
-    # If no fields found, check detail_breakdown from quality_score
-    if not fields:
-        quality = data.get('quality_score', {})
-        breakdown = quality.get('detail_breakdown', {})
-        for field, present in breakdown.items():
-            if present:
-                readable_name = field.replace('_', ' ').title()
-                fields[readable_name] = 1.0
-    
-    return fields if fields else {"Unknown": 1.0}
+    return fields if fields else {"DRIFT": 1, "HINTERGRUND-MUSTER": 1, "DRUCKFAKTOREN": 1}
 
 def _calculate_drift(data: dict) -> float:
-    """Calculate drift from quality score"""
-    quality = data.get('quality_score', {})
-    total_score = quality.get('total_score', 0)
-    
-    # Drift is inverse of quality (0-1 scale)
-    if total_score >= 90:
-        return 0.05
-    elif total_score >= 70:
-        return 0.15
-    elif total_score >= 50:
-        return 0.25
-    else:
-        return 0.40
+    """Calculate drift percentage from quality score"""
+    quality = data.get('quality_score', {}).get('total_score', 0)
+    return max(0.0, (100 - quality) / 100)

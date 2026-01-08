@@ -33,7 +33,8 @@ class SyntexCalibrator:
     def calibrate(
         self,
         meta_prompt: str,
-        verbose: bool = True
+        verbose: bool = True,
+        gpt_user_prompt: Optional[str] = None  # 🔥 NEU!
     ) -> Tuple[bool, Optional[str], Dict]:
         """
         Führt SYNTEX-Kalibrierung durch.
@@ -41,6 +42,7 @@ class SyntexCalibrator:
         Args:
             meta_prompt: Der zu analysierende Meta-Prompt
             verbose: Ausgabe im Terminal
+            gpt_user_prompt: Original GPT User Prompt (optional)
         
         Returns:
             (success, response, metadata)
@@ -76,7 +78,8 @@ class SyntexCalibrator:
             duration_ms=duration_ms,
             retry_count=retry_count,
             error=error,
-            model_params=MODEL_PARAMS
+            model_params=MODEL_PARAMS,
+            gpt_user_prompt=gpt_user_prompt  # 🔥 NEU!
         )
         
         # 4. Output

@@ -105,6 +105,7 @@ class MultilingualProducer:
                         'language_instruction': lang_instruction,
                         'gpt_quality': result.get('quality_score', {}),
                         'gpt_cost': result.get('cost', {}),
+                        'gpt_user_prompt': result.get('prompt_in'),  # 🔥 NEU!
                         'producer_run': datetime.now().isoformat(),
                         'multilingual': True
                     }
@@ -175,6 +176,7 @@ The prompt should be clear and engaging."""
             return {
                 'success': True,
                 'prompt_generated': prompt_text,
+                'prompt_in': user_prompt,  # 🔥 NEU! Full user prompt
                 'quality_score': {'total': 8},  # Placeholder
                 'cost': {
                     'input_tokens': response.usage.prompt_tokens,

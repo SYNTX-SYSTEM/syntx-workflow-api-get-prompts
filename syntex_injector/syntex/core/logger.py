@@ -1,12 +1,10 @@
 """
 SYNTEX Calibration Logging System
 """
-
 import json
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any
-
 
 class CalibrationLogger:
     """Loggt SYNTEX Kalibrierungs-Prozesse"""
@@ -26,7 +24,8 @@ class CalibrationLogger:
         error: Optional[str] = None,
         model_params: Optional[Dict] = None,
         quality_score: Optional[Dict] = None,
-        parsed_fields: Optional[Dict] = None
+        parsed_fields: Optional[Dict] = None,
+        gpt_user_prompt: Optional[str] = None  # 🔥 NEU!
     ) -> None:
         """Loggt eine SYNTEX-Kalibrierung mit allen Metriken"""
         log_entry = {
@@ -43,7 +42,8 @@ class CalibrationLogger:
             "retry_count": retry_count,
             "model_params": model_params or {},
             "quality_score": quality_score,
-            "parsed_fields": parsed_fields
+            "parsed_fields": parsed_fields,
+            "gpt_user_prompt": gpt_user_prompt  # 🔥 NEU!
         }
         
         with open(self.log_file, 'a', encoding='utf-8') as f:

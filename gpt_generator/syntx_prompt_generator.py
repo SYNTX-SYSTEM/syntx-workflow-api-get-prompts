@@ -77,6 +77,7 @@ def generate_prompt(
         result = {
             "success": False,
             "prompt_sent": prompt,
+            "prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
             "prompt_generated": None,
             "error": "Empty input prompt",
             "model": "gpt-4o",
@@ -174,6 +175,7 @@ def generate_prompt(
                         result = {
                             "success": False,
                             "prompt_sent": original_prompt,
+            "prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
                             "prompt_generated": generated_text,
                             "error": f"Content refused after {refusal_attempt} attempts",
                             "model": "gpt-4o",
@@ -191,6 +193,7 @@ def generate_prompt(
                     result = {
                         "success": True,
                         "prompt_sent": original_prompt,
+            "prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
                         "prompt_generated": generated_text,
                         "error": None,
                         "model": "gpt-4o",
@@ -224,6 +227,7 @@ def generate_prompt(
                     result = {
                         "success": False,
                         "prompt_sent": original_prompt,
+            "prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
                         "prompt_generated": None,
                         "error": f"Rate limit: {str(e)}",
                         "model": "gpt-4o",
@@ -247,6 +251,7 @@ def generate_prompt(
                     result = {
                         "success": False,
                         "prompt_sent": original_prompt,
+            "prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
                         "prompt_generated": None,
                         "error": f"Connection error: {str(e)}",
                         "model": "gpt-4o",
@@ -265,6 +270,7 @@ def generate_prompt(
                 result = {
                     "success": False,
                     "prompt_sent": original_prompt,
+            "prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
                     "prompt_generated": None,
                     "error": f"Error: {str(e)}",
                     "model": "gpt-4o",

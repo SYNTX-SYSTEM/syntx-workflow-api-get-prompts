@@ -209,8 +209,8 @@ class QueueConsumer:
             # === SYNTX KALIBRIERUNG ===
             success, response, result_meta = self.calibrator.calibrate(
                 meta_prompt=job.content,
-                verbose=True,  # Zeigt Llama Output
-                show_quality=True  # Zeigt Quality Score
+                verbose=True,
+                gpt_user_prompt=job.metadata.get("gpt_user_prompt")  # 🔥 NEU!
             )
             
             if success:
