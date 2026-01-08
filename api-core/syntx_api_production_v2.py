@@ -26,6 +26,7 @@ from compare.wrappers import router as compare_wrappers_router
 from compare.topics import router as compare_topics_router
 from prompts.prompts_api import router as prompts_router
 from kalibrierung_router import router as kalibrierung_router
+from strom_crud_router import router as strom_crud_router
 from prompts.prompts_advanced_api import router as prompts_advanced_router
 from monitoring.live_monitor_api import router as monitoring_router
 from prompts.evolution_api import router as evolution_router
@@ -59,6 +60,7 @@ app.include_router(prompts_advanced_router)
 app.include_router(monitoring_router)
 app.include_router(generation_router)
 app.include_router(kalibrierung_router)
+app.include_router(strom_crud_router)
 app.include_router(strom_router)
 app.include_router(feld_router)
 app.include_router(evolution_router)

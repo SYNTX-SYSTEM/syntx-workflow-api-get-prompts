@@ -329,6 +329,19 @@ test_endpoint "GET" "/topic-weights/Quantencomputer" "Get Single Topic Weight - 
 test_endpoint "PUT" "/topic-weights/KI" "Set Single Topic Weight - Individual Update" '{"weight":0.92}'
 
 # ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# STROM CRUD - First-Class Calibration Streams (5 Endpoints)
+# ═══════════════════════════════════════════════════════════════════════════
+
+print_header "🌊 STROM CRUD - First-Class Calibration Streams (5 Endpoints)"
+
+test_endpoint "GET" "/strom/crud" "List All Streams - Complete Stream Registry"
+test_endpoint "GET" "/strom/crud/example_morning_strom" "Get Single Stream - Morning Calibration Flow"
+test_endpoint "POST" "/strom/crud" "Create New Stream - Test Stream Creation" '{"name":"API Test Stream","zeitplan":"0 9 * * *","modell":"gpt-4o","felder_topics":{"test":0.7},"styles":["technisch"],"sprachen":["de"]}'
+test_endpoint "PUT" "/strom/crud/api_test_stream" "Update Stream - Modify Test Stream" '{"zeitplan":"0 10 * * *","felder_topics":{"test":0.9}}'
+test_endpoint "DELETE" "/strom/crud/api_test_stream" "Delete Stream - Remove Test Stream"
+
 # KRONTUN - Cron Orchestration (Real Calibration Data)
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -352,7 +365,7 @@ echo -e "${PURPLE}║${NC}                                                      
 PASS_RATE=$(echo "scale=1; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
 AVG_TIME=$(echo "scale=0; $TOTAL_TIME / $TOTAL_TESTS" | bc)
 
-printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Total Tests:" "$TOTAL_TESTS (incl. 7 KRONTUN/Weights)"
+printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Total Tests:" "$TOTAL_TESTS (incl. 5 STROM + 7 KRONTUN)"
 printf "${PURPLE}║${NC}   ${GREEN}%-20s${NC} ${GREEN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Passed:" "$PASSED_TESTS"
 printf "${PURPLE}║${NC}   ${RED}%-20s${NC} ${RED}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Failed:" "$FAILED_TESTS"
 printf "${PURPLE}║${NC}   ${WHITE}%-20s${NC} ${CYAN}%-10s${NC}                                       ${PURPLE}║${NC}\n" "Pass Rate:" "${PASS_RATE}%"
@@ -389,7 +402,8 @@ echo -e "${PURPLE}║${NC}   ${GRAY}• Feld & Strom:        4 endpoints${NC}   
 echo -e "${PURPLE}║${NC}   ${GRAY}• Prompts:             4 endpoints${NC}                                       ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Monitoring:          1 endpoint${NC}                                        ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}   ${GRAY}• Topic Weights:       4 endpoints (Persistent Priority Control)${NC}        ${PURPLE}║${NC}"
-echo -e "${PURPLE}║${NC}   ${GRAY}• KRONTUN:             3 endpoints (Real Calibration Data - 1288 runs)${NC}  ${PURPLE}║${NC}"
+echo -e "${PURPLE}║${NC}   ${GRAY}• STROM CRUD:         5 endpoints (First-Class Streams)
+${PURPLE}║${NC}   ${GRAY}• KRONTUN:             3 endpoints (Real Calibration Data - 1288 runs)${NC}  ${PURPLE}║${NC}"
 echo -e "${PURPLE}║${NC}                                                                             ${PURPLE}║${NC}"
 echo -e "${PURPLE}╚═════════════════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
