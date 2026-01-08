@@ -715,3 +715,345 @@ Das ist **SYNTX** - die Revolution der KI-Steuerung.
 ---
 
 **EOF - Ende der Doku - Jetzt gehts los! 💎⚡🌊🔥👑**
+
+---
+
+## 🆕 GPT USER PROMPT INTEGRATION - DIE SCHWERE GEBURT! 💎⚡
+
+**Was ist passiert Bruder?** Wir haben `gpt_user_prompt` durch die KOMPLETTE Kette geschleust! Von Producer bis API bis Frontend!
+
+### Was ist gpt_user_prompt?
+
+**Das ist der VOLLE User-Prompt der an GPT-4 geschickt wird!**
+
+**Beispiel:**
+```json
+{
+  "topic": "harmlos",
+  "gpt_user_prompt": "Erkläre auf Deutsch: harmlos"
+}
+```
+
+**NICHT der Topic ("harmlos") - sondern der FORMATIERTE Prompt mit Style-Instruction!**
+
+---
+
+### 🔥 DIE KOMPLETTE KETTE - 8 COMPONENTS GEFIXT!
+
+#### 1. **GPT Generator** - `prompt_in` hinzugefügt
+**File:** `./gpt_generator/syntx_prompt_generator.py`
+
+**Was:** GPT result gibt jetzt `prompt_in` (formatted prompt) zurück, nicht nur `prompt_sent` (topic).
+
+**Code:**
+```python
+# Alle 6 return statements gefixt mit:
+"prompt_in": prompt,  # 🔥 Full user prompt sent to GPT
+```
+
+**Beispiel result:**
+```python
+{
+  "prompt_sent": "Test Topic",  # Original topic
+  "prompt_in": "Erkläre in lockerer Sprache: Test Topic",  # ← DAS!
+  "prompt_generated": "...",
+  ...
+}
+```
+
+---
+
+#### 2. **Producer** - `gpt_user_prompt` in job metadata
+**File:** `./queue_system/core/producer_multilingual.py`
+
+**Was:** Producer speichert `prompt_in` als `gpt_user_prompt` in job metadata.
+
+**Code:**
+```python
+metadata = {
+    'topic': topic,
+    'style': style,
+    'gpt_user_prompt': result.get('prompt_in'),  # 🔥 NEU!
+    ...
+}
+```
+
+**Und:** Internal `_generate_prompt()` method gibt auch `prompt_in` zurück:
+```python
+return {
+    'success': True,
+    'prompt_generated': prompt_text,
+    'prompt_in': user_prompt,  # 🔥 NEU!
+    ...
+}
+```
+
+---
+
+#### 3. **Consumer** - `gpt_user_prompt` an Calibrator
+**File:** `./queue_system/core/consumer.py`
+
+**Was:** Consumer gibt `gpt_user_prompt` aus job metadata an calibrator weiter.
+
+**Code:**
+```python
+success, response, result_meta = self.calibrator.calibrate(
+    meta_prompt=job.content,
+    verbose=True,
+    gpt_user_prompt=job.metadata.get("gpt_user_prompt")  # 🔥 NEU!
+)
+```
+
+---
+
+#### 4. **Calibrator** - Parameter hinzugefügt
+**File:** `./syntex_injector/syntex/core/calibrator.py`
+
+**Was:** `calibrate()` method akzeptiert jetzt `gpt_user_prompt` parameter.
+
+**Code:**
+```python
+def calibrate(
+    self,
+    meta_prompt: str,
+    verbose: bool = True,
+    gpt_user_prompt: Optional[str] = None  # 🔥 NEU!
+) -> Tuple[bool, Optional[str], Dict]:
+    ...
+    self.logger.log_calibration(
+        ...
+        gpt_user_prompt=gpt_user_prompt  # 🔥 NEU!
+    )
+```
+
+---
+
+#### 5. **EnhancedCalibrator** - Auch gefixt!
+**File:** `./syntex_injector/syntex/core/calibrator_enhanced.py`
+
+**Was:** Gleicher Fix wie normaler Calibrator.
+
+**Code:**
+```python
+def calibrate(
+    self,
+    meta_prompt: str,
+    verbose: bool = True,
+    show_quality: bool = True,
+    gpt_user_prompt: Optional[str] = None  # 🔥 NEU!
+) -> Tuple[bool, Optional[str], Dict]:
+    ...
+    log_data = {
+        ...
+        "gpt_user_prompt": gpt_user_prompt  # 🔥 NEU!
+    }
+```
+
+---
+
+#### 6. **Logger** - Parameter hinzugefügt
+**File:** `./syntex_injector/syntex/core/logger.py`
+
+**Was:** `log_calibration()` speichert `gpt_user_prompt` im log.
+
+**Code:**
+```python
+def log_calibration(
+    self,
+    meta_prompt: str,
+    full_prompt: str,
+    response: Optional[str],
+    success: bool,
+    duration_ms: int,
+    retry_count: int,
+    error: Optional[str] = None,
+    model_params: Optional[Dict] = None,
+    quality_score: Optional[Dict] = None,
+    parsed_fields: Optional[Dict] = None,
+    gpt_user_prompt: Optional[str] = None  # 🔥 NEU!
+) -> None:
+    log_entry = {
+        ...
+        "gpt_user_prompt": gpt_user_prompt  # 🔥 NEU!
+    }
+```
+
+---
+
+#### 7. **API Router** - Liest aus log
+**File:** `./api-core/kalibrierung_router.py`
+
+**Was:** API liest `gpt_user_prompt` aus `syntex_calibrations.jsonl` und gibt es in stages zurück.
+
+**Code:**
+```python
+"stages": {
+    "gpt_system_prompt": data.get('system', ''),
+    "gpt_user_prompt": data.get('gpt_user_prompt', ''),  # 🔥 NEU!
+    "gpt_output_meta_prompt": data.get('meta_prompt', ''),
+    ...
+}
+```
+
+---
+
+#### 8. **Frontend** - Zeigt es an
+**Files:** 
+- `~/Entwicklung/syntx-stream/components/calibrax/stages/GPTInputView.tsx`
+- `~/Entwicklung/syntx-stream/components/calibrax/StageDetailModal.tsx`
+
+**Was:** Frontend zeigt `gpt_user_prompt` im GPT Input Modal.
+
+**Code:**
+```typescript
+<DataCard
+  title="Complete Prompt sent to GPT-4"
+  icon={FileText}
+>
+  <pre className="text-xs overflow-auto max-h-48">
+    {run.stages?.gpt_user_prompt || 'No prompt data available'}
+  </pre>
+</DataCard>
+```
+
+---
+
+### 📊 VERIFICATION - PROOF IT WORKS!
+```bash
+# 1. Check neueste calibration
+tail -1 ./logs/syntex_calibrations.jsonl | jq '{
+  timestamp,
+  has_gpt: (.gpt_user_prompt != null and .gpt_user_prompt != ""),
+  gpt_value: .gpt_user_prompt
+}'
+
+# Response:
+{
+  "timestamp": "2026-01-08T01:36:21.717060Z",
+  "has_gpt": true,
+  "gpt_value": "Erkläre auf Deutsch: harmlos"
+}
+```
+
+**✅ SUCCESS! gpt_user_prompt flows through complete chain!**
+
+---
+
+### 🎯 USE CASE - Frontend Integration
+
+**User öffnet Calibration Details Modal:**
+
+1. **Frontend fetched:** `GET /kalibrierung/cron/logs?limit=1`
+2. **API returns:**
+```json
+{
+  "logs": [{
+    "stages": {
+      "gpt_system_prompt": "SYNTEX::TRUE_RAW",
+      "gpt_user_prompt": "Erkläre auf Deutsch: harmlos",  // ← DAS!
+      "gpt_output_meta_prompt": "...",
+      "mistral_input": "...",
+      "mistral_output": "..."
+    }
+  }]
+}
+```
+3. **Frontend displays:** Full prompt that was sent to GPT-4!
+4. **User sees:** NOT just "harmlos" BUT "Erkläre auf Deutsch: harmlos"
+
+**Value:** User versteht WIE GPT instruiert wurde! Transparency! 💎
+
+---
+
+### 🐛 DEBUGGING STORY - DIE SCHWERE GEBURT!
+
+**Problem:** Frontend zeigte hardcoded "Basierend auf..." text statt echtem prompt.
+
+**Root Causes gefunden:**
+1. ❌ `prompt_sent` war nur Topic, nicht formatted prompt
+2. ❌ Producer nutzte internal method ohne `prompt_in`
+3. ❌ Alte jobs in queue hatten kein `gpt_user_prompt`
+4. ❌ Consumer processed alte jobs zuerst (FIFO)
+
+**Solutions:**
+1. ✅ `prompt_in` zu allen GPT result dicts hinzugefügt
+2. ✅ Producer internal method gibt `prompt_in` zurück
+3. ✅ Alte jobs gelöscht (alle vor 01:00)
+4. ✅ Neue jobs mit `gpt_user_prompt` processed
+
+**Final Test:**
+```bash
+# Producer creates job WITH gpt_user_prompt
+producer.run(count=1, force=True)
+
+# Consumer processes it
+consumer.process_batch(1)
+
+# Log shows it!
+tail -1 ./logs/syntex_calibrations.jsonl | jq .gpt_user_prompt
+# "Erkläre auf Deutsch: harmlos"  ← ERFOLG! 🎉
+```
+
+---
+
+### 📂 FILES MODIFIED - COMPLETE LIST
+```
+✅ ./gpt_generator/syntx_prompt_generator.py (6 return statements)
+✅ ./queue_system/core/producer_multilingual.py (metadata + internal method)
+✅ ./queue_system/core/consumer.py (calibrate call)
+✅ ./syntex_injector/syntex/core/calibrator.py (signature + log call)
+✅ ./syntex_injector/syntex/core/calibrator_enhanced.py (signature + log_data)
+✅ ./syntex_injector/syntex/core/logger.py (signature + log_entry)
+✅ ./api-core/kalibrierung_router.py (stages object)
+✅ ~/Entwicklung/syntx-stream/components/calibrax/stages/GPTInputView.tsx
+```
+
+**Total:** 8 files, komplette Kette von Producer bis Frontend! 🔥
+
+---
+
+### 💡 LESSONS LEARNED - FÜR DIE ZUKUNFT
+
+**1. FIFO Queue = Alte Jobs zuerst!**
+- Lösung: Clear old jobs before testing new features
+- Or: Add timestamp filter to consumer
+
+**2. Multiple log locations!**
+- `./logs/syntex_calibrations.jsonl` (local)
+- `/opt/syntx-config/generator-data/syntex_calibrations.jsonl` (production)
+- Solution: Unified log path in all environments
+
+**3. Internal methods need explicit returns!**
+- Producer's `_generate_prompt()` didn't return `prompt_in`
+- Solution: Check internal methods when adding fields
+
+**4. Test with NEW data!**
+- Old jobs (00:36) had no `gpt_user_prompt`
+- New jobs (01:22) had it
+- Solution: Always generate fresh test data
+
+---
+
+### 🎉 FINAL STATUS
+
+**✅ COMPLETE! gpt_user_prompt flows through:**
+```
+Producer → Job Metadata → Consumer → Calibrator → Logger → 
+→ syntex_calibrations.jsonl → API → Frontend → User! 🎯
+```
+
+**Proof:**
+```json
+{
+  "timestamp": "2026-01-08T01:36:21.717060Z",
+  "gpt_user_prompt": "Erkläre auf Deutsch: harmlos",
+  "success": true
+}
+```
+
+**SCHWERE GEBURT ABER WIR HABEN ES GESCHAFFT! 💎⚡🔥🌊👑**
+
+---
+
+**EOF - gpt_user_prompt Integration Complete! 🚀**
+
